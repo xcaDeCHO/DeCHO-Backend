@@ -24,6 +24,7 @@ class CauseSerializer(serializers.ModelSerializer):
     cause_approval = ApprovalSerializer()
     donations = DonationSerializer()
     decho_wallet = WalletSerializer(read_only=True)
+    wallet_address = serializers.CharField(write_only=True)
 
     class Meta:
         model = Cause
@@ -37,5 +38,3 @@ class CauseSerializer(serializers.ModelSerializer):
         Approval.objects.create(cause=cause, **approval)
         Donation.objects.create(cause=cause, **donation)
         return cause
-
-
