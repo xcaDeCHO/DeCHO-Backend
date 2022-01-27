@@ -6,6 +6,7 @@ from .serializers import CauseSerializer
 from .models import Cause
 from .utils import view
 
+
 # Create your views here.
 
 @api_view(['POST'])
@@ -21,6 +22,7 @@ def list_causes(request):
     causes = Cause.objects.all()
     serializer = CauseSerializer(instance=causes, many=True)
     return Response({'status': status.HTTP_200_OK, 'data': serializer.data}, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def check_balances(request, address):
