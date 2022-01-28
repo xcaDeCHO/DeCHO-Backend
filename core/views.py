@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CauseSerializer
 from .models import Cause
-from .utils import view
+# from .utils import view
 
 
 # Create your views here.
@@ -24,6 +24,6 @@ def list_causes(request):
     return Response({'status': status.HTTP_200_OK, 'data': serializer.data}, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-def check_balances(request, address):
-    return Response({'status': status.HTTP_200_OK, 'data': view(address)}, status=status.HTTP_200_OK)
+# @api_view(['GET'])
+# def check_balances(request, address):
+#     return Response({'status': status.HTTP_200_OK, 'data': view(address)}, status=status.HTTP_200_OK)
