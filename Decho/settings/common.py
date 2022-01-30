@@ -129,3 +129,11 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'authentication.User'
+
+CELERY_BEAT_SCHEDULE = {
+    'update-cause-status': {
+        'task': 'tasks.update_cause_status',
+        'schedule': 1800.0,
+        'args': ()
+    },
+}

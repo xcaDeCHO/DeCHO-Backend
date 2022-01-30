@@ -1,7 +1,8 @@
+import requests
 # from algosdk.v2client import algod
 # from decouple import config
 #
-# choice_id = config("CHOICE_ID")
+# testnet_choice_id = config("TESTNET_CHOICE_ID")
 # algod_token = config("TOKEN")
 #
 # algod_address = "https://testnet-algorand.api.purestake.io/ps2"
@@ -31,3 +32,17 @@
 #     algo_balance = algod_client.account_info(asa)["amount"]
 #     choice_balance = check_choice_balance(asa)
 #     return {"algo_balance": algo_balance, "choice_balance": choice_balance}
+algo_explorer_address = 'https://algoindexer.testnet.algoexplorerapi.io'
+choice_id = None
+
+def check__choice_balance(wallet_address):
+    response = requests.get(f'{algo_explorer_address}/v2/account/{wallet_address}')
+    if response.status_code == 200:
+        response_dict = response.json()
+        for asset in response_dict.get('assets'):
+            if asset.get('asset-id') == choice_id:
+                return asset.get('amount')
+            else:
+                return 'Wallet in not opted in for CHOICE. Contact a moderator'
+    else:
+        return 'An error occurred'
