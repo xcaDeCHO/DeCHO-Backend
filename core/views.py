@@ -26,4 +26,5 @@ def list_causes(request):
 
 @api_view(['GET'])
 def check_balances(request, address):
-    return Response({'status': status.HTTP_200_OK, 'data': check__choice_balance(address)}, status=status.HTTP_200_OK)
+    balance_response = check__choice_balance(address)
+    return Response(balance_response, status=balance_response.get('status'))

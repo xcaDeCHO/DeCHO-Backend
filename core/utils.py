@@ -1,4 +1,5 @@
 import requests
+from rest_framework import status
 # from algosdk.v2client import algod
 # from decouple import config
 #
@@ -41,8 +42,9 @@ def check__choice_balance(wallet_address):
         response_dict = response.json()
         for asset in response_dict.get('assets'):
             if asset.get('asset-id') == choice_id:
-                return asset.get('amount')
+                return {'status': status.HTTP_200_OK, 'data': asset.get('amount')}
             else:
-                return 'Wallet in not opted in for CHOICE. Contact a moderator'
+                return {'status': status.HTTP_412_PRECONDITION_FAILED, 'data': 'Wallet in not opted in for CHOICE. '
+                                                                               'Contact a moderator'}
     else:
-        return 'An error occurred'
+        return {'status': response.status_code, 'data': response.json()},
