@@ -34,19 +34,20 @@ from rest_framework import status
 #     choice_balance = check_choice_balance(asa)
 #     return {"algo_balance": algo_balance, "choice_balance": choice_balance}
 algo_explorer_address = 'https://algoindexer.testnet.algoexplorerapi.io'
-choice_id = None
+choice_id = 21364625
 
 def check__choice_balance(wallet_address):
-    response = requests.get(f'{algo_explorer_address}/v2/account/{wallet_address}')
-    print(response.json())
+    try:
+        response = requests.get(f'{algo_explorer_address}/v2/accounts/{wallet_address}')
+    except:
+        return {'status': status.HTTP_200_OK, 'data': 0}
     if response.status_code == 200:
         response_dict = response.json()
-        for asset in response_dict.get('assets'):
+        for asset in response_dict.get('account').get('assets'):
             if asset.get('asset-id') == choice_id:
-                return {'status': status.HTTP_200_OK, 'data': asset.get('amount')}
+                return {'status': status.HTTP_200_OK, 'data': asset.get('amount')/100}
             else:
-                return {'status': status.HTTP_412_PRECONDITION_FAILED, 'data': 'Wallet in not opted in for CHOICE. '
-                                                                               'Contact a moderator'}
+                return {'status': status.HTTP_412_PRECONDITION_FAILED, 'data': 'Error: not Opted in'}
 
     else:
         return {'status': response.status_code, 'data': response.json()}
