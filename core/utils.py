@@ -38,6 +38,7 @@ choice_id = None
 
 def check__choice_balance(wallet_address):
     response = requests.get(f'{algo_explorer_address}/v2/account/{wallet_address}')
+    print(response.json())
     if response.status_code == 200:
         response_dict = response.json()
         for asset in response_dict.get('assets'):
@@ -46,5 +47,6 @@ def check__choice_balance(wallet_address):
             else:
                 return {'status': status.HTTP_412_PRECONDITION_FAILED, 'data': 'Wallet in not opted in for CHOICE. '
                                                                                'Contact a moderator'}
+
     else:
-        return {'status': response.status_code, 'data': response.json()},
+        return {'status': response.status_code, 'data': response.json()}
