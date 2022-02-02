@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Cause, Wallet, Donation, Approval
+from secrets import token_urlsafe
 
 
 class WalletSerializer(serializers.ModelSerializer):
@@ -26,6 +27,7 @@ class CauseSerializer(serializers.ModelSerializer):
     decho_wallet = WalletSerializer(read_only=True)
     wallet_address = serializers.CharField(write_only=True)
 
+    photo_url = serializers.SerializerMethodField()
     class Meta:
         model = Cause
         fields = '__all__'
@@ -38,3 +40,6 @@ class CauseSerializer(serializers.ModelSerializer):
         Approval.objects.create(cause=cause, **approval)
         Donation.objects.create(cause=cause, **donation)
         return cause
+
+    def get_photo_url(self, obj):
+        return f"https://avatars.dicebear.com/api/bottts/{token_urlsafe(10)}.svg"
