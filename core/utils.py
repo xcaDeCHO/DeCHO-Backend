@@ -1,5 +1,6 @@
 import requests
 from rest_framework import status
+
 # from algosdk.v2client import algod
 # from decouple import config
 #
@@ -36,18 +37,22 @@ from rest_framework import status
 algo_explorer_address = 'https://algoindexer.testnet.algoexplorerapi.io'
 choice_id = 21364625
 
+
 def check__choice_balance(wallet_address):
     try:
         response = requests.get(f'{algo_explorer_address}/v2/accounts/{wallet_address}')
     except:
-        return {'status': status.HTTP_200_OK, 'data': 0}
+        print('broke')
+        return 0
+    print(response.status_code)
+    print(response.json())
     if response.status_code == 200:
         response_dict = response.json()
         for asset in response_dict.get('account').get('assets'):
             if asset.get('asset-id') == choice_id:
-                return {'status': status.HTTP_200_OK, 'data': asset.get('amount')/100}
+                return asset.get('amount') / 100
             else:
-                return {'status': status.HTTP_412_PRECONDITION_FAILED, 'data': 'Error: not Opted in'}
-
+                return 'Error: not Opted in'
     else:
-        return {'status': response.status_code, 'data': response.json()}
+        print(0)
+        return 0
