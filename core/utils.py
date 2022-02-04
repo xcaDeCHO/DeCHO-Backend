@@ -48,11 +48,14 @@ def check__choice_balance(wallet_address):
     print(response.json())
     if response.status_code == 200:
         response_dict = response.json()
-        for asset in response_dict.get('account').get('assets'):
-            if asset.get('asset-id') == choice_id:
-                return asset.get('amount') / 100
-            else:
-                return 'Error: not Opted in'
+        try:
+            for asset in response_dict.get('account').get('assets'):
+                if asset.get('asset-id') == choice_id:
+                    return asset.get('amount') / 100
+                else:
+                    return 'Error: not Opted in'
+        except TypeError:
+            return 'Error: not Opted in'
     else:
         print(0)
         return 0
