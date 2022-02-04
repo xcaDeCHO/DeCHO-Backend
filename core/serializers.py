@@ -45,7 +45,8 @@ class CauseSerializer(serializers.ModelSerializer):
         return cause
 
     def get_photo_url(self, obj):
-        return f"https://avatars.dicebear.com/api/bottts/{token_urlsafe(10)}.svg"
+        # return f"https://avatars.dicebear.com/api/bottts/{token_urlsafe(10)}.svg"
+        return "https://picsum.photos/350/350"
 
     def get_balance(self, instance):
         balance = check__choice_balance(instance.decho_wallet.address)
