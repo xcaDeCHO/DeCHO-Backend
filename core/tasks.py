@@ -21,3 +21,6 @@ def update_cause_status():
 
 
 
+@app.task
+def fund_wallet(address):
+    pass
