@@ -7,9 +7,11 @@ from algosdk import account, mnemonic, constants
 from algosdk.v2client import algod
 from algosdk.future import transaction
 from django.conf import settings
+from utils import transactions_list
 
 algod_address = config('ALGOD_ADDRESS')
 algod_token = ''
+
 
 @app.task
 def update_cause_status():
@@ -22,9 +24,14 @@ def update_cause_status():
         except:
             return
 
-        if balance/100 >= cause.cause_approval.goal:
+        if balance / 100 >= cause.cause_approval.goal:
             cause.status = 'Approved'
-
+            transactions = transactions_list(address)
+            for transaction in transactions.get('transactions'):
+                if transaction.get('asset-transfer-transaction').get('reciever') == address:
+                    refund_from_approval(wallet=cause.decho_wallet, reciever=transaction.get('sender'),
+                                         amount=int(transaction.get('asset-transfer-transaction').get('amount')),
+                                         asset=settings.CHOICE_ID)
 
 
 @app.task
@@ -68,6 +75,12 @@ def fund_wallet(address):
         return
 
 
+def refund_from_approval(wallet, reciever, amount, asset):
+    client = algod.AlgodClient(algod_token, algod_address)
+    params = client.suggested_params()
+    txn = transaction.AssetTransferTxn(sender=wallet.address, sp=params, receiver=reciever, amt=amount, index=asset)
+    signed_txn = txn.sign(mnemonic.to_private_key(wallet.mnemonic))
+    client.send_transaction(signed_txn)
 
 # @app.task
 # def opt_in_to_choice(address):
