@@ -137,3 +137,6 @@ CELERY_BEAT_SCHEDULE = {
         'args': ()
     },
 }
+
+
+CHOICE_ID = 21364625

@@ -1,5 +1,6 @@
 import requests
 from rest_framework import status
+from django.conf import settings
 
 # from algosdk.v2client import algod
 # from decouple import config
@@ -35,14 +36,15 @@ from rest_framework import status
 #     choice_balance = check_choice_balance(asa)
 #     return {"algo_balance": algo_balance, "choice_balance": choice_balance}
 algo_explorer_address = 'https://algoindexer.testnet.algoexplorerapi.io'
-choice_id = 21364625
+choice_id = settings.CHOICE_ID
 
 
 def check__choice_balance(wallet_address):
     try:
         response = requests.get(f'{algo_explorer_address}/v2/accounts/{wallet_address}')
-    except:
+    except Exception as e:
         print('broke')
+        print(e)
         return 0
     print(response.status_code)
     print(response.json())

@@ -3,8 +3,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CauseSerializer
-from .models import Cause
+from .models import Cause, Wallet
 from .utils import check__choice_balance
+from .tasks import fund_wallet
 
 
 # Create your views here.
@@ -20,6 +21,7 @@ def create_cause(request):
 @api_view(['GET'])
 def list_causes(request):
     causes = Cause.objects.all()
+    cause_address = causes[1].decho_wallet.address
     serializer = CauseSerializer(instance=causes, many=True)
     return Response({'status': status.HTTP_200_OK, 'data': serializer.data}, status=status.HTTP_200_OK)
 
@@ -29,3 +31,11 @@ def check_balances(request, address):
     balance_response = check__choice_balance(address)
     print(balance_response)
     return Response(balance_response, status=balance_response.get('status'))
+
+
+@api_view(['GET'])
+def fund_all_wallets(request):
+    wallets = Wallet.objects.all()
+    for wallet in wallets:
+        fund_wallet.delay(wallet.address)
+    return Response({'status': status.HTTP_200_OK, 'data': 'Transactions queued'}, status=status.HTTP_200_OK)

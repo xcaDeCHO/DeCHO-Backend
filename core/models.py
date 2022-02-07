@@ -18,7 +18,7 @@ class Cause(models.Model):
 class Wallet(models.Model):
     cause = models.OneToOneField(Cause, on_delete=models.CASCADE, related_name="decho_wallet")
     mnemonic = models.CharField(max_length=3000)
-    address = models.CharField(max_length=100)
+    address = models.CharField(max_length=100, unique=True)
 
 
 class Donation(models.Model):
