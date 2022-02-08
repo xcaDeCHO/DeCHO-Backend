@@ -1,6 +1,5 @@
 /.idea/
 /.env
-.venv
 *.log
 *.pot
 *.pyc
