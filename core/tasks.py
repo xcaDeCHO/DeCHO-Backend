@@ -61,7 +61,7 @@ def update_cause_status():
 
         if balance / 100 >= cause.cause_approval.goal:
             cause.status = "Approved"
-            transactions = get_transactions(indexer_client, address, CHOICE_ID)
+            transactions = get_transactions(indexer_client, address, settings.CHOICE_ID)
             for _transaction in transactions:
                 refund_from_approval(
                     wallet=cause.decho_wallet,
