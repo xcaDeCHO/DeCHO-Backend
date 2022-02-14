@@ -34,7 +34,7 @@ class CauseSerializer(serializers.ModelSerializer):
     # wallet_address = serializers.CharField(write_only=True)
     balance = serializers.SerializerMethodField()
 
-    photo_url = serializers.SerializerMethodField()
+    # photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Cause
@@ -52,8 +52,8 @@ class CauseSerializer(serializers.ModelSerializer):
     # def get_photo_url(self, obj):
     #     return f"https://avatars.dicebear.com/api/bottts/{token_urlsafe(10)}.svg"
 
-    def get_photo_url(self, obj):
-        return f"https://avatars/dicebear.com/api/bottts/{obj.uuid}"
+    # def get_photo_url(self, obj):
+    #     return f"https://avatars/dicebear.com/api/bottts/{obj.uuid}"
 
     def get_balance(self, instance):
         balance = check_choice_balance(algod_client, instance.decho_wallet.address)
