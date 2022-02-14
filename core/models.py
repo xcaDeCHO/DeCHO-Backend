@@ -1,12 +1,14 @@
 from django.db import models
 from secrets import token_urlsafe
 
+
 # Create your models here.
 
 
 class Cause(models.Model):
     STATUS = (('Approved', 'Approved'),
-              ('pending', 'pending'))
+              ('pending', 'pending'),
+              ('done', 'done'))
 
     title = models.CharField(max_length=255)
     short_description = models.CharField(max_length=255)
@@ -14,6 +16,7 @@ class Cause(models.Model):
     status = models.CharField(max_length=12, choices=STATUS, default='pending')
     wallet_address = models.CharField(max_length=60)
     uuid = models.CharField(max_length=50, blank=True, editable=False, default=token_urlsafe(15))
+
 
 class Wallet(models.Model):
     cause = models.OneToOneField(Cause, on_delete=models.CASCADE, related_name="decho_wallet")
@@ -31,4 +34,3 @@ class Approval(models.Model):
     cause = models.OneToOneField(Cause, on_delete=models.CASCADE, related_name="cause_approval")
     expiry_date = models.DateTimeField()
     goal = models.IntegerField()
-
