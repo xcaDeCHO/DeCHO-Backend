@@ -1,5 +1,7 @@
 from algosdk.v2client.indexer import IndexerClient
 from django.conf import settings
+from algosdk import mnemonic
+from algosdk.future import transaction
 
 CHOICE_ID = settings.CHOICE_ID
 
@@ -40,6 +42,11 @@ def check_choice_balance(algod_client, address):
     return choice_balance
 
 
+def check_algo_balance(algod_client, address: str) -> int:
+    account = algod_client.account_info(address)
+    return account.get('amount')
+
+
 def contains_choice_coin(algod_client, address: str) -> bool:
     """Checks if the address is opt into Choice Coin."""
     account = algod_client.account_info(address)
@@ -53,7 +60,7 @@ def contains_choice_coin(algod_client, address: str) -> bool:
     return contains_choice
 
 
-def get_transactions(indexer_client: IndexerClient, address: str, asa_id: int):
+def get_transactions(indexer_client: IndexerClient, address: str, asa_id=None):
     """Gets all transactions for a particular ASA on an address"""
 
     txns = indexer_client.search_asset_transactions(
@@ -63,3 +70,4 @@ def get_transactions(indexer_client: IndexerClient, address: str, asa_id: int):
         address_role="receiver",
     )
     return txns["transactions"]
+

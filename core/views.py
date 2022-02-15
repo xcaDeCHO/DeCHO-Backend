@@ -7,6 +7,7 @@ from .serializers import CauseSerializer
 from .tasks import fund_wallet
 from .utils import check_choice_balance
 
+
 # Create your views here.
 
 
@@ -24,7 +25,18 @@ def create_cause(request):
 
 @api_view(["GET"])
 def list_causes(request):
-    causes = Cause.objects.all()
+    causes = Cause.objects.filter(status='pending')
+    serializer = CauseSerializer(instance=causes, many=True)
+    return Response(
+        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+    )
+
+
+# TODO: Write view for canceled causes
+
+@api_view(["GET"])
+def approved_causes(request):
+    causes = Cause.objects.filter(status='Approved')
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
         {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
