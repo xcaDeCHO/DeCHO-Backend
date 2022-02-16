@@ -134,8 +134,8 @@ AUTH_USER_MODEL = "authentication.User"
 
 CHOICE_ID = 21364625
 
-ALGOD_ADDRESS = "https://testnet.algoexplorerapi.io/v2"
-INDEXER_ADDRESS = "https://testnet.algoexplorerapi.io/idx2/v2"
+ALGOD_ADDRESS = "https://api.testnet.algoexplorer.io/v2"
+INDEXER_ADDRESS = "https://api.testnet.algoexplorer.io/idx2/v2"
 ALGOD_TOKEN = ""
 ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS)
 INDEXER_CLIENT = indexer.IndexerClient(ALGOD_TOKEN, INDEXER_ADDRESS, {"X-API-Key": ""})

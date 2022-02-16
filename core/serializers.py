@@ -48,5 +48,5 @@ class CauseSerializer(serializers.ModelSerializer):
         return cause
 
     def get_balance(self, instance):
-        balance = check_choice_balance(algod_client, instance.decho_wallet.address)
+        balance = check_choice_balance(instance.decho_wallet.address)
         return balance

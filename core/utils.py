@@ -5,8 +5,11 @@ from algosdk.future import transaction
 
 CHOICE_ID = settings.CHOICE_ID
 
+algod_client = settings.ALGOD_CLIENT
+indexer_client = settings.INDEXER_CLIENT
 
-def wait_for_transaction_confirmation(algod_client, transaction_id: str):
+
+def wait_for_transaction_confirmation(transaction_id: str):
     """Wait until the transaction is confirmed or rejected, or until timeout snumber of rounds have passed."""
 
     TIMEOUT = 5
@@ -29,7 +32,7 @@ def wait_for_transaction_confirmation(algod_client, transaction_id: str):
 
 
 # TODO: You probably want to your opt in error here
-def check_choice_balance(algod_client, address):
+def check_choice_balance(address):
     """Checks if the address is opt into Choice Coin."""
     account = algod_client.account_info(address)
     choice_balance = 0
@@ -42,12 +45,12 @@ def check_choice_balance(algod_client, address):
     return choice_balance
 
 
-def check_algo_balance(algod_client, address: str) -> int:
+def check_algo_balance(address: str) -> int:
     account = algod_client.account_info(address)
     return account.get('amount')
 
 
-def contains_choice_coin(algod_client, address: str) -> bool:
+def contains_choice_coin(address: str) -> bool:
     """Checks if the address is opt into Choice Coin."""
     account = algod_client.account_info(address)
     contains_choice = False
@@ -60,7 +63,7 @@ def contains_choice_coin(algod_client, address: str) -> bool:
     return contains_choice
 
 
-def get_transactions(indexer_client: IndexerClient, address: str, asa_id=None):
+def get_transactions(address: str, asa_id=None):
     """Gets all transactions for a particular ASA on an address"""
 
     txns = indexer_client.search_asset_transactions(
