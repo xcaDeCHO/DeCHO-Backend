@@ -17,7 +17,7 @@ class Cause(models.Model):
     status = models.CharField(max_length=12, choices=STATUS, default='pending')
     wallet_address = models.CharField(max_length=60)
     # uuid = models.CharField(max_length=50, blank=True, editable=False, default=token_urlsafe(15))
-    photo_url = models.URLField(default=f"https://avatars/dicebear.com/api/bottts/{token_urlsafe(15)}")
+    photo_url = models.URLField(default=f"https://avatars.dicebear.com/api/bottts/{token_urlsafe(15)}")
 
 
 class Wallet(models.Model):

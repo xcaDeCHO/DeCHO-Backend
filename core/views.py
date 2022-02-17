@@ -56,11 +56,11 @@ def check_balances(request, address):
     return Response({"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
-def fund_all_wallets(request):
-    wallets = Wallet.objects.all()
-    for wallet in wallets:
-        fund_wallet(wallet.address)
-    return Response(
-        {"status": status.HTTP_200_OK, "data": "Transactions queued"}, status=status.HTTP_200_OK
-    )
+# @api_view(["GET"])
+# def fund_all_wallets(request):
+#     wallets = Wallet.objects.all()
+#     for wallet in wallets:
+#         fund_wallet(wallet.address)
+#     return Response(
+#         {"status": status.HTTP_200_OK, "data": "Transactions queued"}, status=status.HTTP_200_OK
+#     )
