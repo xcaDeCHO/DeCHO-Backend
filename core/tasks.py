@@ -1,5 +1,6 @@
-import logging
 import datetime
+import logging
+import time
 
 from algosdk import mnemonic
 from algosdk.future import transaction
@@ -9,13 +10,7 @@ from huey import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, task
 
 from .models import Cause, Wallet
-from .utils import (
-    check_choice_balance,
-    check_algo_balance,
-    contains_choice_coin,
-    get_transactions,
-    wait_for_transaction_confirmation,
-)
+from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
@@ -41,10 +36,30 @@ def fund_wallet(wallet_address):
     signed_txn = unsigned_txn.sign(mnemonic.to_private_key(config("CENTRAL_MNEMONIC")))
     txid = algod_client.send_transaction(signed_txn)
 
-    wait_for_transaction_confirmation(algod_client, txid)
+    time.sleep(6)
+    # transaction.wait_for_confirmation(algod_client, txid)
     logger.info(f"Funded wallet successfully! {wallet_address}")
 
     opt_in_to_choice(wallet_address)
+
+
+@db_task(retries=2)
+def opt_in_to_choice(address):
+    logger.info(f"Opting into $CHOICE ASA for {address}...")
+
+    wallet = Wallet.objects.get(address=address)
+    if not contains_choice_coin(address):
+        suggested_params = algod_client.suggested_params()
+        unsigned_transaction = transaction.AssetTransferTxn(
+            wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
+        )
+        signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
+        transaction_id = algod_client.send_transaction(signed_transaction)
+
+        time.sleep(6)
+        # transaction.wait_for_confirmation(algod_client, transaction_id)
+
+    logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
 
 @db_periodic_task(crontab(minute="*/30"))
@@ -85,7 +100,7 @@ def update_cause_status():
             return
 
 
-@db_periodic_task(crontab('*/30'))
+@db_periodic_task(crontab("*/30"))
 def update_cause_from_approved():
     logger.info("Attempting to update causes status from approval...")
 
@@ -105,33 +120,15 @@ def update_cause_from_approved():
             cause.save()
             transactions = get_transactions(indexer_client, cause.decho_wallet.address)
             for _transaction in transactions:
-                if _transaction.get('sender') == cause.decho_wallet.address:
+                if _transaction.get("sender") == cause.decho_wallet.address:
                     pass
                 else:
                     transfer_algo(
-                        receiver=_transaction.get('sender'),
+                        receiver=_transaction.get("sender"),
                         sender=cause.decho_wallet,
-                        amount=int(_transaction.get("asset-transfer-transaction").get("amount"))
+                        amount=int(_transaction.get("asset-transfer-transaction").get("amount")),
                     )
             return
-
-
-@db_task(retries=2)
-def opt_in_to_choice(address):
-    logger.info(f"Opting into $CHOICE ASA for {address}...")
-
-    wallet = Wallet.objects.get(address=address)
-    if not contains_choice_coin(algod_client, address):
-        suggested_params = algod_client.suggested_params()
-        unsigned_transaction = transaction.AssetTransferTxn(
-            wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
-        )
-        signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
-        transaction_id = algod_client.send_transaction(signed_transaction)
-
-        wait_for_transaction_confirmation(algod_client, transaction_id)
-
-    logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
 
 @db_task()
@@ -151,7 +148,8 @@ def refund_from_approval(decho_wallet_addr, reciever_addr, amount, asset):
     signed_txn = txn.sign(mnemonic.to_private_key(wallet.mnemonic))
     txn_id = algod_client.send_transaction(signed_txn)
 
-    wait_for_transaction_confirmation(algod_client, txn_id)
+    time.sleep(4)
+    # transaction.wait_for_confirmation(algod_client, txn_id)
     logger.info(
         f"Refunded approval deposit of {amount} from {decho_wallet_addr} to {reciever_addr}!"
     )
@@ -167,18 +165,16 @@ def donation_goal_reached_transfer(cause: Cause):
 # def refund_algo(sender: Wallet, receiver: str):
 #     pass
 
+
 @db_task()
 def transfer_algo(receiver, sender, amount):
     params = algod_client.suggested_params()
     unsigned_txn = transaction.PaymentTxn(
-        sender=sender.address,
-        sp=params,
-        receiver=receiver,
-        amt=amount
+        sender=sender.address, sp=params, receiver=receiver, amt=amount
     )
     signed_txn = unsigned_txn.sign(mnemonic.to_private_key(sender.mnemonic))
     txn_id = algod_client.send_transaction(signed_txn)
-    wait_for_transaction_confirmation(algod_client, txn_id)
-    logger.info(
-        f"Sent algo(cause goal reached) {amount} from {sender.address} to {receiver}!"
-    )
+
+    time.sleep(4)
+    # transaction.wait_for_confirmation(algod_client, txn_id)
+    logger.info(f"Sent algo(cause goal reached) {amount} from {sender.address} to {receiver}!")

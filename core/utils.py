@@ -1,69 +1,43 @@
-from algosdk.v2client.indexer import IndexerClient
 from django.conf import settings
-from algosdk import mnemonic
-from algosdk.future import transaction
-
-CHOICE_ID = settings.CHOICE_ID
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
 
 
-def wait_for_transaction_confirmation(transaction_id: str):
-    """Wait until the transaction is confirmed or rejected, or until timeout snumber of rounds have passed."""
+def contains_choice_coin(address: str) -> bool:
+    """Checks if the address is opt into Choice Coin."""
+    account = indexer_client.account_info(address)
+    contains_choice = False
 
-    TIMEOUT = 5
-    start_round = algod_client.status()["last-round"] + 1
-    current_round = start_round
+    if account.get("account").get("assets"):
+        for asset in account["account"]["assets"]:
+            if asset["asset-id"] == settings.CHOICE_ID:
+                contains_choice = True
+                break
 
-    while current_round < start_round + TIMEOUT:
-        try:
-            pending_txn = algod_client.pending_transaction_info(transaction_id)
-        except Exception:
-            return
-        if pending_txn.get("confirmed-round", 0) > 0:
-            return pending_txn
-        elif pending_txn["pool-error"]:
-            raise Exception("pool error: {}".format(pending_txn["pool-error"]))
-
-        algod_client.status_after_block(current_round)
-        current_round += 1
-    raise Exception("pending tx not found in TIMEOUT rounds, TIMEOUT value = : {}".format(TIMEOUT))
+    return contains_choice
 
 
-# TODO: You probably want to your opt in error here
 def check_choice_balance(address):
     """Checks if the address is opt into Choice Coin."""
-    account = algod_client.account_info(address)
-    choice_balance = 0
+    account = indexer_client.account_info(address)
 
-    for asset in account["assets"]:
-        if asset["asset-id"] == CHOICE_ID:
-            choice_balance = asset["amount"]
-            break
+    choice_balance = 0
+    if account.get("account").get("assets"):
+        for asset in account["account"]["assets"]:
+            if asset["asset-id"] == settings.CHOICE_ID:
+                choice_balance = asset["amount"]
+                break
 
     return choice_balance
 
 
 def check_algo_balance(address: str) -> int:
-    account = algod_client.account_info(address)
-    return account.get('amount')
+    account = indexer_client.account_info(address)
+    return account["account"]["amount"]
 
 
-def contains_choice_coin(address: str) -> bool:
-    """Checks if the address is opt into Choice Coin."""
-    account = algod_client.account_info(address)
-    contains_choice = False
-
-    for asset in account["assets"]:
-        if asset["asset-id"] == CHOICE_ID:
-            contains_choice = True
-            break
-
-    return contains_choice
-
-
-def get_transactions(address: str, asa_id=None):
+def get_transactions(address: str, asa_id: int):
     """Gets all transactions for a particular ASA on an address"""
 
     txns = indexer_client.search_asset_transactions(
@@ -73,4 +47,3 @@ def get_transactions(address: str, asa_id=None):
         address_role="receiver",
     )
     return txns["transactions"]
-

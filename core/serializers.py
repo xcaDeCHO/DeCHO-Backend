@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from .models import Approval, Cause, Donation, Wallet
-from .utils import check_choice_balance
+from .utils import check_algo_balance, check_choice_balance
 
 algod_client = settings.ALGOD_CLIENT
 
@@ -48,5 +48,9 @@ class CauseSerializer(serializers.ModelSerializer):
         return cause
 
     def get_balance(self, instance):
-        balance = check_choice_balance(instance.decho_wallet.address)
+        if instance.status == "Approved":
+            balance = check_algo_balance(instance.decho_wallet.address)
+        else:
+            balance = check_choice_balance(instance.decho_wallet.address)
+
         return balance
