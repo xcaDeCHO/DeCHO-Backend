@@ -24,7 +24,7 @@ def test_huey():
 
 
 # Two retries might be too much
-@task(retries=2)
+# @task(retries=2)
 def fund_wallet(wallet_address):
     logger.info(f"Funding wallet {wallet_address}...")
 
@@ -39,27 +39,27 @@ def fund_wallet(wallet_address):
     time.sleep(6)
     # transaction.wait_for_confirmation(algod_client, txid)
     logger.info(f"Funded wallet successfully! {wallet_address}")
+    print(txid)
 
     opt_in_to_choice(wallet_address)
 
 
-@db_task(retries=2)
 def opt_in_to_choice(address):
     logger.info(f"Opting into $CHOICE ASA for {address}...")
 
     wallet = Wallet.objects.get(address=address)
-    if not contains_choice_coin(address):
-        suggested_params = algod_client.suggested_params()
-        unsigned_transaction = transaction.AssetTransferTxn(
-            wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
-        )
-        signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
-        transaction_id = algod_client.send_transaction(signed_transaction)
 
-        time.sleep(6)
-        # transaction.wait_for_confirmation(algod_client, transaction_id)
+    suggested_params = algod_client.suggested_params()
+    unsigned_transaction = transaction.AssetTransferTxn(
+        wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
+    )
+    signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
+    transaction_id = algod_client.send_transaction(signed_transaction)
 
-    logger.info(f"Opted into $CHOICE ASA for {address} successful!")
+    time.sleep(5)
+    # transaction.wait_for_confirmation(algod_client, transaction_id)
+
+# logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
 
 @db_periodic_task(crontab(minute="*/30"))
@@ -70,7 +70,7 @@ def update_cause_status():
     logger.info(f"Found {causes.count()} causes pending!")
     for cause in causes:
         address = cause.decho_wallet.address
-        balance = check_choice_balance(algod_client, address)
+        balance = check_choice_balance(address)
         try:
             balance = int(balance)
         except:
@@ -78,7 +78,7 @@ def update_cause_status():
 
         if balance / 100 >= cause.cause_approval.goal:
             cause.status = "Approved"
-            transactions = get_transactions(indexer_client, address, settings.CHOICE_ID)
+            transactions = get_transactions(address, settings.CHOICE_ID)
             for _transaction in transactions:
                 refund_from_approval(
                     wallet=cause.decho_wallet,
@@ -107,7 +107,7 @@ def update_cause_from_approved():
     causes = Cause.objects.filter(status="Approved")
     logger.info(f"Found {causes.count()} causes being donated to!")
     for cause in causes:
-        algo_balance = check_algo_balance(algod_client, address=cause.decho_wallet.address)
+        algo_balance = check_algo_balance(address=cause.decho_wallet.address)
         if algo_balance / 100000 >= cause.donations.goal:
             receiver = cause.wallet_address
             sender = cause.decho_wallet
