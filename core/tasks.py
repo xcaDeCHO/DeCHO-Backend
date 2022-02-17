@@ -24,7 +24,7 @@ def test_huey():
 
 
 # Two retries might be too much
-@task(retries=2)
+# @task(retries=2)
 def fund_wallet(wallet_address):
     logger.info(f"Funding wallet {wallet_address}...")
 
@@ -39,27 +39,27 @@ def fund_wallet(wallet_address):
     time.sleep(6)
     # transaction.wait_for_confirmation(algod_client, txid)
     logger.info(f"Funded wallet successfully! {wallet_address}")
+    print(txid)
 
     opt_in_to_choice(wallet_address)
 
 
-@db_task(retries=2)
 def opt_in_to_choice(address):
     logger.info(f"Opting into $CHOICE ASA for {address}...")
 
     wallet = Wallet.objects.get(address=address)
-    if not contains_choice_coin(address):
-        suggested_params = algod_client.suggested_params()
-        unsigned_transaction = transaction.AssetTransferTxn(
-            wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
-        )
-        signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
-        transaction_id = algod_client.send_transaction(signed_transaction)
 
-        time.sleep(6)
-        # transaction.wait_for_confirmation(algod_client, transaction_id)
+    suggested_params = algod_client.suggested_params()
+    unsigned_transaction = transaction.AssetTransferTxn(
+        wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
+    )
+    signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
+    transaction_id = algod_client.send_transaction(signed_transaction)
 
-    logger.info(f"Opted into $CHOICE ASA for {address} successful!")
+    time.sleep(5)
+    # transaction.wait_for_confirmation(algod_client, transaction_id)
+
+# logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
 
 @db_periodic_task(crontab(minute="*/30"))

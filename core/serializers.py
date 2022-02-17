@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from .models import Approval, Cause, Donation, Wallet
 from .utils import check_algo_balance, check_choice_balance
+from .tasks import opt_in_to_choice
 
 algod_client = settings.ALGOD_CLIENT
 
@@ -36,7 +37,7 @@ class CauseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cause
-        exclude = ["wallet_address"]
+        fields = "__all__"
 
     def create(self, validated_data):
         data = validated_data.copy()
