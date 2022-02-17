@@ -70,7 +70,7 @@ def update_cause_status():
     logger.info(f"Found {causes.count()} causes pending!")
     for cause in causes:
         address = cause.decho_wallet.address
-        balance = check_choice_balance(algod_client, address)
+        balance = check_choice_balance(address)
         try:
             balance = int(balance)
         except:
@@ -78,7 +78,7 @@ def update_cause_status():
 
         if balance / 100 >= cause.cause_approval.goal:
             cause.status = "Approved"
-            transactions = get_transactions(indexer_client, address, settings.CHOICE_ID)
+            transactions = get_transactions(address, settings.CHOICE_ID)
             for _transaction in transactions:
                 refund_from_approval(
                     wallet=cause.decho_wallet,
@@ -107,7 +107,7 @@ def update_cause_from_approved():
     causes = Cause.objects.filter(status="Approved")
     logger.info(f"Found {causes.count()} causes being donated to!")
     for cause in causes:
-        algo_balance = check_algo_balance(algod_client, address=cause.decho_wallet.address)
+        algo_balance = check_algo_balance(address=cause.decho_wallet.address)
         if algo_balance / 100000 >= cause.donations.goal:
             receiver = cause.wallet_address
             sender = cause.decho_wallet

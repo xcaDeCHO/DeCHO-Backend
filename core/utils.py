@@ -21,15 +21,16 @@ def contains_choice_coin(address: str) -> bool:
 def check_choice_balance(address):
     """Checks if the address is opt into Choice Coin."""
     account = indexer_client.account_info(address)
+    if contains_choice_coin(address):
+        choice_balance = 0
+        if account.get("account").get("assets"):
+            for asset in account["account"]["assets"]:
+                if asset["asset-id"] == settings.CHOICE_ID:
+                    choice_balance = asset["amount"]
+                    break
 
-    choice_balance = 0
-    if account.get("account").get("assets"):
-        for asset in account["account"]["assets"]:
-            if asset["asset-id"] == settings.CHOICE_ID:
-                choice_balance = asset["amount"]
-                break
-
-    return choice_balance
+        return choice_balance
+    return 'Error not opted in for Choice'
 
 
 def check_algo_balance(address: str) -> int:

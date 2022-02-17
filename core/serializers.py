@@ -31,7 +31,7 @@ class CauseSerializer(serializers.ModelSerializer):
     cause_approval = ApprovalSerializer()
     donations = DonationSerializer()
     decho_wallet = WalletSerializer(read_only=True)
-    # wallet_address = serializers.CharField(write_only=True)
+    wallet_address = serializers.CharField(write_only=True, max_length=58, min_length=58)
     balance = serializers.SerializerMethodField()
 
     class Meta:
@@ -48,9 +48,9 @@ class CauseSerializer(serializers.ModelSerializer):
         return cause
 
     def get_balance(self, instance):
-        if instance.status == "Approved":
-            balance = check_algo_balance(instance.decho_wallet.address)
-        else:
+        if instance.status == "pending":
             balance = check_choice_balance(instance.decho_wallet.address)
+        else:
+            balance = check_algo_balance(instance.decho_wallet.address)
 
         return balance
