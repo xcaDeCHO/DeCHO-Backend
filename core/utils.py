@@ -35,7 +35,7 @@ from rest_framework import status
 #     choice_balance = check_choice_balance(asa)
 #     return {"algo_balance": algo_balance, "choice_balance": choice_balance}
 algo_explorer_address = 'https://algoindexer.testnet.algoexplorerapi.io'
-choice_id = 21364625
+choice_id = 71501663
 
 
 def check__choice_balance(wallet_address):
