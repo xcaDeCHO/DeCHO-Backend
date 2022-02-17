@@ -53,7 +53,7 @@ def approved_causes(request):
 def check_balances(request, address):
     balance_response = check_choice_balance(address)
     print(balance_response)
-    return Response(balance_response, status=balance_response.get("status"))
+    return Response(balance_response, status=balance_response)
 
 
 @api_view(["GET"])
