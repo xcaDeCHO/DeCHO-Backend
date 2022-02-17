@@ -51,7 +51,7 @@ def check__choice_balance(wallet_address):
         try:
             for asset in response_dict.get('account').get('assets'):
                 if asset.get('asset-id') == choice_id:
-                    return asset.get('amount') / 100
+                    return asset.get('amount')
                 else:
                     return 'Error: not Opted in'
         except TypeError:
