@@ -30,7 +30,8 @@ def create_cause(request):
 
 @api_view(["GET"])
 def list_causes(request):
-    causes = Cause.objects.filter(status='pending')
+    statuses = ['pending', 'Approved']
+    causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
         {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
