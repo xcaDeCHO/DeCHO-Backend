@@ -1,5 +1,3 @@
-from secrets import token_urlsafe
-
 from django.conf import settings
 from rest_framework import serializers
 
