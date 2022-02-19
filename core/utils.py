@@ -37,7 +37,7 @@ def check_choice_balance(address):
 
 def check_algo_balance(address: str) -> int:
     account = indexer_client.account_info(address)
-    return account["account"]["amount"]
+    return (account["account"]["amount"]/1000000)
 
 
 def get_transactions(address: str, asa_id: int):
