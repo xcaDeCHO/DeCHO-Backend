@@ -87,9 +87,9 @@ def update_cause_status():
                     asset=settings.CHOICE_ID,
                 )
             return
-        elif datetime.date.today() > cause.cause_approval.expiry_date:
+        elif datetime.datetime.now().date() > cause.cause_approval.expiry_date:
             cause.status = "canceled"
-            transactions = get_transactions(indexer_client, address, settings.CHOICE_ID)
+            transactions = get_transactions(address=address, asa_id=settings.CHOICE_ID)
             for _transaction in transactions:
                 refund_from_approval(
                     wallet=cause.decho_wallet,
@@ -97,6 +97,7 @@ def update_cause_status():
                     amount=int(_transaction.get("asset-transfer-transaction").get("amount")),
                     asset=settings.CHOICE_ID,
                 )
+
             return
 
 
