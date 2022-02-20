@@ -116,7 +116,7 @@ def update_cause_from_approved():
             transfer_algo(receiver=receiver, sender=sender, amount=amount)
             cause.status = "done"
             cause.save()
-        elif datetime.date.today() > cause.donations.expiry_date:
+        elif datetime.datetime.now().date() > cause.donations.expiry_date:
             cause.status = "canceled"
             cause.save()
             transactions = get_transactions(indexer_client, cause.decho_wallet.address)
