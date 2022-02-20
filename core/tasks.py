@@ -62,7 +62,7 @@ def opt_in_to_choice(address):
 # logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
 
-@db_periodic_task(crontab(minute="*/30"))
+@db_periodic_task(crontab(minute="*/1"))
 def update_cause_status():
     logger.info("Attempting to update causes status...")
 
@@ -87,7 +87,7 @@ def update_cause_status():
                     asset=settings.CHOICE_ID,
                 )
             return
-        elif datetime.datetime.now().date() > cause.cause_approval.expiry_date:
+        elif datetime.datetime.now().date() > cause.cause_approval.expiry_date.date():
             cause.status = "canceled"
             transactions = get_transactions(address=address, asa_id=settings.CHOICE_ID)
             for _transaction in transactions:
@@ -116,7 +116,9 @@ def update_cause_from_approved():
             transfer_algo(receiver=receiver, sender=sender, amount=amount)
             cause.status = "done"
             cause.save()
-        elif datetime.datetime.now().date() > cause.donations.expiry_date:
+            print(type(datetime.datetime.now().date()))
+            print(f"2nd {type(cause.donations.expiry_date)}")
+        elif datetime.datetime.now().date() > cause.donations.expiry_date.date():
             cause.status = "canceled"
             cause.save()
             transactions = get_transactions(indexer_client, cause.decho_wallet.address)
