@@ -13,14 +13,6 @@ HUEY = {
     "immediate": False,  # If DEBUG=True, run synchronously.
     "utc": True,  # Use UTC for all times internally.
     "blocking": True,  # Perform blocking pop rather than poll Redis.
-    "connection": {
-        "db": 0,
-        "connection_pool": None,  # Definitely you should use pooling!
-        # ... tons of other options, see redis-py for details.
-        # huey-specific connection parameters.
-        "read_timeout": 1,  # If not polling (blocking pop), use timeout.
-        "url": config('REDIS_URL'),  # Allow Redis config via a DSN.
-    },
     "consumer": {
         "workers": 1,
         "worker_type": "thread",
