@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 
 from algosdk.v2client import algod, indexer
+from cryptography.fernet import Fernet
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -139,3 +140,4 @@ INDEXER_ADDRESS = "https://algoindexer.testnet.algoexplorerapi.io"
 ALGOD_TOKEN = ""
 ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS, {"X-API-Key": ""})
 INDEXER_CLIENT = indexer.IndexerClient(ALGOD_TOKEN, INDEXER_ADDRESS, {"X-API-Key": ""})
+FERNET = Fernet(key=config("ENC_KEY"))

@@ -14,6 +14,7 @@ from .utils import check_algo_balance, check_choice_balance, contains_choice_coi
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
+fernet = settings.FERNET
 
 logger = logging.getLogger("huey")
 
@@ -150,7 +151,8 @@ def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int
         amt=amount,
         index=asset,
     )
-    signed_txn = txn.sign(mnemonic.to_private_key(wallet.mnemonic))
+    wallet_mnemonic = fernet.decrypt(wallet.mnemonic).decode()
+    signed_txn = txn.sign(mnemonic.to_private_key(wallet_mnemonic))
     txn_id = algod_client.send_transaction(signed_txn)
 
     time.sleep(4)
@@ -177,7 +179,8 @@ def transfer_algo(receiver, sender, amount):
     unsigned_txn = transaction.PaymentTxn(
         sender=sender.address, sp=params, receiver=receiver, amt=amount
     )
-    signed_txn = unsigned_txn.sign(mnemonic.to_private_key(sender.mnemonic))
+    wallet_mnemonic = fernet.decrypt(sender.mnemonic).decode()
+    signed_txn = unsigned_txn.sign(mnemonic.to_private_key(wallet_mnemonic))
     txn_id = algod_client.send_transaction(signed_txn)
 
     time.sleep(4)
