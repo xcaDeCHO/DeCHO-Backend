@@ -12,7 +12,7 @@ fernet = settings.FERNET
 def generate_wallet_for_cause(instance: Cause):
     private_key, address = account.generate_account()
     wallet_mnemonic = mnemonic.from_private_key(private_key)
-    encrypted_mnemonic = fernet.encrypt(wallet_mnemonic.encode())
+    encrypted_mnemonic = fernet.encrypt(wallet_mnemonic.encode()).decode()
     wallet = Wallet.objects.create(address=address, mnemonic=encrypted_mnemonic, cause=instance)
     return wallet
 

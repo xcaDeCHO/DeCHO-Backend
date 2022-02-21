@@ -10,11 +10,10 @@ from huey import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, task
 
 from .models import Cause, Wallet
-from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions
+from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, decrypt_mnemonic
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
-fernet = settings.FERNET
 
 logger = logging.getLogger("huey")
 
@@ -54,16 +53,18 @@ def opt_in_to_choice(address):
     unsigned_transaction = transaction.AssetTransferTxn(
         wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
     )
-    signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
+    wallet_mnemonic = decrypt_mnemonic(wallet.mnemonic)
+    signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet_mnemonic))
     transaction_id = algod_client.send_transaction(signed_transaction)
 
     time.sleep(5)
     # transaction.wait_for_confirmation(algod_client, transaction_id)
 
+
 # logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
 
-@db_periodic_task(crontab(minute="*/30"))
+@db_periodic_task(crontab(minute="*/10"))
 def update_cause_status():
     logger.info("Attempting to update causes status...")
 
@@ -77,7 +78,7 @@ def update_cause_status():
         except:
             return
 
-        if balance / 100 >= cause.cause_approval.goal:
+        if balance >= cause.cause_approval.goal:
             cause.status = "Approved"
             transactions = get_transactions(address, settings.CHOICE_ID)
             for _transaction in transactions:
@@ -104,7 +105,7 @@ def update_cause_status():
             return
 
 
-@db_periodic_task(crontab("*/30"))
+@db_periodic_task(crontab("*/10"))
 def update_cause_from_approved():
     logger.info("Attempting to update causes status from approval...")
 
@@ -112,7 +113,7 @@ def update_cause_from_approved():
     logger.info(f"Found {causes.count()} causes being donated to!")
     for cause in causes:
         algo_balance = check_algo_balance(address=cause.decho_wallet.address)
-        if algo_balance / 100000 >= cause.donations.goal:
+        if algo_balance >= cause.donations.goal:
             receiver = cause.wallet_address
             sender = cause.decho_wallet
             amount = cause.donations.goal
@@ -151,7 +152,7 @@ def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int
         amt=amount,
         index=asset,
     )
-    wallet_mnemonic = fernet.decrypt(wallet.mnemonic).decode()
+    wallet_mnemonic = decrypt_mnemonic(wallet.mnemonic)
     signed_txn = txn.sign(mnemonic.to_private_key(wallet_mnemonic))
     txn_id = algod_client.send_transaction(signed_txn)
 
@@ -174,12 +175,12 @@ def donation_goal_reached_transfer(cause: Cause):
 
 
 @db_task()
-def transfer_algo(receiver, sender, amount):
+def transfer_algo(receiver, sender: Wallet, amount):
     params = algod_client.suggested_params()
     unsigned_txn = transaction.PaymentTxn(
         sender=sender.address, sp=params, receiver=receiver, amt=amount
     )
-    wallet_mnemonic = fernet.decrypt(sender.mnemonic).decode()
+    wallet_mnemonic = decrypt_mnemonic(sender.mnemonic)
     signed_txn = unsigned_txn.sign(mnemonic.to_private_key(wallet_mnemonic))
     txn_id = algod_client.send_transaction(signed_txn)
 

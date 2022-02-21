@@ -140,4 +140,6 @@ INDEXER_ADDRESS = "https://algoindexer.testnet.algoexplorerapi.io"
 ALGOD_TOKEN = ""
 ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS, {"X-API-Key": ""})
 INDEXER_CLIENT = indexer.IndexerClient(ALGOD_TOKEN, INDEXER_ADDRESS, {"X-API-Key": ""})
-FERNET = Fernet(key=config("ENC_KEY"))
+_key = config("ENC_KEY")
+_key = _key.encode()
+FERNET = Fernet(key=_key)

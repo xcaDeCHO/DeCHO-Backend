@@ -4,6 +4,8 @@ from django.conf import settings
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
+fernet = settings.FERNET
+
 
 
 def contains_choice_coin(address: str) -> bool:
@@ -27,7 +29,7 @@ def check_choice_balance(address: str):
     if account.get("account").get("assets"):
         for asset in account["account"]["assets"]:
             if asset["asset-id"] == settings.CHOICE_ID:
-                choice_balance = asset["amount"]
+                choice_balance = asset["amount"]/100
                 break
 
     return choice_balance
@@ -37,7 +39,7 @@ def check_choice_balance(address: str):
 
 def check_algo_balance(address: str) -> int:
     account = indexer_client.account_info(address)
-    return (account["account"]["amount"]/1000000)
+    return account["account"]["amount"] / 1000000
 
 
 def get_transactions(address: str, asa_id: int):
@@ -54,3 +56,6 @@ def get_transactions(address: str, asa_id: int):
 
 def gen_random_photo_url():
     return f"https://avatars.dicebear.com/api/bottts/{secrets.token_hex(10)}.png"
+
+def decrypt_mnemonic(mnemonic:str)->str:
+    return fernet.decrypt(mnemonic.encode()).decode()
