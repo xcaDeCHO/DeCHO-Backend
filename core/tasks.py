@@ -81,7 +81,7 @@ def update_cause_status():
             transactions = get_transactions(address, settings.CHOICE_ID)
             for _transaction in transactions:
                 refund_from_approval(
-                    decho_wallet_addr=cause.decho_wallet,
+                    decho_wallet_addr=cause.decho_wallet.address,
                     reciever_addr=_transaction.get("sender"),
                     amount=int(_transaction.get("asset-transfer-transaction").get("amount")),
                     asset=settings.CHOICE_ID,
@@ -93,7 +93,7 @@ def update_cause_status():
             transactions = get_transactions(address=address, asa_id=settings.CHOICE_ID)
             for _transaction in transactions:
                 refund_from_approval(
-                    decho_wallet_addr=cause.decho_wallet,
+                    decho_wallet_addr=cause.decho_wallet.address,
                     reciever_addr=_transaction.get("sender"),
                     amount=int(_transaction.get("asset-transfer-transaction").get("amount")),
                     asset=settings.CHOICE_ID,
@@ -137,7 +137,7 @@ def update_cause_from_approved():
 
 
 @db_task()
-def refund_from_approval(decho_wallet_addr, reciever_addr, amount, asset):
+def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int, asset: int):
     logger.info(
         f"Refunding approval deposit of {amount} from {decho_wallet_addr} to {reciever_addr}..."
     )
