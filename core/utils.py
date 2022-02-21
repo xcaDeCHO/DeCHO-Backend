@@ -19,7 +19,7 @@ def contains_choice_coin(address: str) -> bool:
     return contains_choice
 
 
-def check_choice_balance(address):
+def check_choice_balance(address: str):
     """Checks if the address is opt into Choice Coin."""
     account = indexer_client.account_info(address)
     # if contains_choice_coin(address):address
