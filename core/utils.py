@@ -1,3 +1,5 @@
+import secrets
+
 from django.conf import settings
 
 algod_client = settings.ALGOD_CLIENT
@@ -35,7 +37,7 @@ def check_choice_balance(address: str):
 
 def check_algo_balance(address: str) -> int:
     account = indexer_client.account_info(address)
-    return account["account"]["amount"]
+    return (account["account"]["amount"]/1000000)
 
 
 def get_transactions(address: str, asa_id: int):
@@ -48,3 +50,7 @@ def get_transactions(address: str, asa_id: int):
         address_role="receiver",
     )
     return txns["transactions"]
+
+
+def gen_random_photo_url():
+    return f"https://avatars.dicebear.com/api/bottts/{secrets.token_hex(10)}.png"

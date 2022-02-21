@@ -1,7 +1,6 @@
-import base64
-from secrets import token_urlsafe
-
 from django.db import models
+
+from .utils import gen_random_photo_url
 
 # Create your models here.
 
@@ -19,16 +18,7 @@ class Cause(models.Model):
     long_description = models.CharField(max_length=3000)
     status = models.CharField(max_length=12, choices=STATUS, default="pending")
     wallet_address = models.CharField(max_length=60)
-    # uuid = models.CharField(max_length=50, blank=True, editable=False, default=token_urlsafe(15))
-
-    photo_url = models.URLField(default=f"https://avatars.dicebear.com/api/bottts/{token_urlsafe(15)}")
-#     photo_url = models.URLField(blank=True, null=True)
-
-#     def save(self, *args, **kwargs):
-#         if not self.photo_url:
-#             self.photo_url = base64.b64encode(str(self.title).encode("ascii")).decode("ascii")
-#             super().save(*args, **kwargs)
-# 
+    photo_url = models.URLField(default=gen_random_photo_url)
 
 
 class Wallet(models.Model):
