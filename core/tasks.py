@@ -62,7 +62,7 @@ def opt_in_to_choice(address):
 # logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
 
-@db_periodic_task(crontab(minute="*/30"))
+@db_periodic_task(crontab(minute="*/10"))
 def update_cause_status():
     logger.info("Attempting to update causes status...")
 
@@ -74,9 +74,11 @@ def update_cause_status():
         try:
             balance = int(balance)
         except:
+            logger.info("exception block")
             return
-
-        if balance / 100 >= cause.cause_approval.goal:
+        logger.info(f"choice balance {balance} and goal {cause.cause_approval.goal}")
+        if balance >= cause.cause_approval.goal:
+            logger.info("compared")
             cause.status = "Approved"
             transactions = get_transactions(address, settings.CHOICE_ID)
             for _transaction in transactions:
@@ -103,7 +105,7 @@ def update_cause_status():
             return
 
 
-@db_periodic_task(crontab("*/30"))
+@db_periodic_task(crontab("*/10"))
 def update_cause_from_approved():
     logger.info("Attempting to update causes status from approval...")
 
