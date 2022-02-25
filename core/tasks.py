@@ -116,7 +116,7 @@ def update_cause_from_approved():
         if algo_balance >= cause.donations.goal:
             receiver = cause.wallet_address
             sender = cause.decho_wallet
-            amount = cause.donations.goal
+            amount = (algo_balance - 1) * 1000000
             transfer_algo(receiver=receiver, sender=sender, amount=amount)
             cause.status = "done"
             cause.save()
