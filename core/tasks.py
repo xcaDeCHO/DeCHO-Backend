@@ -113,7 +113,7 @@ def update_cause_from_approved():
     logger.info(f"Found {causes.count()} causes being donated to!")
     for cause in causes:
         algo_balance = check_algo_balance(address=cause.decho_wallet.address)
-        if algo_balance / 100000 >= cause.donations.goal:
+        if algo_balance >= cause.donations.goal:
             receiver = cause.wallet_address
             sender = cause.decho_wallet
             amount = cause.donations.goal
