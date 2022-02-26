@@ -117,6 +117,7 @@ def update_cause_from_approved():
             receiver = cause.wallet_address
             sender = cause.decho_wallet
             amount = (algo_balance - 1) * 1000000
+            print(f"the amount is {amount}")
             transfer_algo(receiver=receiver, sender=sender, amount=amount)
             cause.status = "done"
             cause.save()
