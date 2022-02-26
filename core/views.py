@@ -38,6 +38,17 @@ def list_causes(request):
     )
 
 
+@api_view(["GET"])
+def null_causes(request):
+    statuses = ['done', 'canceled']
+    causes = Cause.objects.filter(status__in=statuses)
+    serializer = CauseSerializer(instance=causes, many=True)
+    return Response(
+        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+    )
+
+
+
 # TODO: Write view for canceled causes
 
 @api_view(["GET"])

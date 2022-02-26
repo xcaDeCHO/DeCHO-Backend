@@ -124,7 +124,6 @@ def update_cause_from_approved():
             print(f"2nd {type(cause.donations.expiry_date)}")
         elif datetime.datetime.now().date() > cause.donations.expiry_date.date():
             cause.status = "canceled"
-            cause.save()
             transactions = get_transactions(indexer_client, cause.decho_wallet.address)
             for _transaction in transactions:
                 if _transaction.get("sender") == cause.decho_wallet.address:
@@ -135,6 +134,7 @@ def update_cause_from_approved():
                         sender=cause.decho_wallet,
                         amount=int(_transaction.get("asset-transfer-transaction").get("amount")),
                     )
+            cause.save()
             return
 
 
