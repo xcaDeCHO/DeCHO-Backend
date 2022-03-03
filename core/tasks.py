@@ -91,7 +91,7 @@ def update_cause_status():
                 )
             cause.save()
             return
-        elif datetime.datetime.now().date() > cause.cause_approval.expiry_date.date():
+        elif datetime.datetime.now() >= cause.cause_approval.expiry_date:
             logger.info("date_passed")
             cause.status = "canceled"
             transactions = get_transactions(address=address, asa_id=settings.CHOICE_ID)
