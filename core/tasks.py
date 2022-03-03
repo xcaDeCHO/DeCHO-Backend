@@ -1,6 +1,7 @@
 import datetime
 import logging
 import time
+import pytz
 
 from algosdk import mnemonic
 from algosdk.future import transaction
@@ -16,6 +17,8 @@ algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
 
 logger = logging.getLogger("huey")
+
+utc = pytz.UTC
 
 
 @task()
@@ -91,7 +94,7 @@ def update_cause_status():
                 )
             cause.save()
             return
-        elif datetime.datetime.now() >= cause.cause_approval.expiry_date:
+        elif utc.localize(datetime.datetime.now()) >= cause.cause_approval.expiry_date:
             logger.info("date_passed")
             cause.status = "canceled"
             transactions = get_transactions(address=address, asa_id=settings.CHOICE_ID)
@@ -127,7 +130,7 @@ def update_cause_from_approved():
             cause.save()
             print(type(datetime.datetime.now().date()))
             print(f"2nd {type(cause.donations.expiry_date)}")
-        elif datetime.datetime.now().date() > cause.donations.expiry_date.date():
+        elif utc.localize(datetime.datetime.now()) > cause.donations.expiry_date:
             cause.status = "canceled"
             transactions = get_transactions(indexer_client, cause.decho_wallet.address)
             for _transaction in transactions:
