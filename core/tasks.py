@@ -94,7 +94,9 @@ def update_cause_status():
             logger.info("date_passed")
             cause.status = "canceled"
             transactions = get_transactions(address=address, asa_id=settings.CHOICE_ID)
+            logger.info(f'the transactions:{transactions}')
             for _transaction in transactions:
+                logger.info(_transaction)
                 refund_from_approval(
                     decho_wallet_addr=cause.decho_wallet.address,
                     reciever_addr=_transaction.get("sender"),
