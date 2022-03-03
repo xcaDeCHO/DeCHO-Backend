@@ -29,7 +29,7 @@ def test_huey():
 # Two retries might be too much
 # @task(retries=2)
 def fund_wallet(wallet_address):
-    logger.info(f"Funding wallet {wallet_address}...")
+    print(f"Funding wallet {wallet_address}...")
 
     suggested_params = algod_client.suggested_params()
     central_address = config("CENTRAL_WALLET_ADDRESS")
