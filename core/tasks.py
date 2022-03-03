@@ -69,6 +69,7 @@ def update_cause_status():
     causes = Cause.objects.filter(status="pending")
     logger.info(f"Found {causes.count()} causes pending!")
     for cause in causes:
+        logger.info(f'cause: {cause.id}')
         address = cause.decho_wallet.address
         balance = check_choice_balance(address)
         try:
