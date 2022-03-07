@@ -48,7 +48,6 @@ def null_causes(request):
     )
 
 
-
 # TODO: Write view for canceled causes
 
 @api_view(["GET"])
@@ -65,7 +64,6 @@ def check_balances(request, address):
     balance_response = check_choice_balance(address)
     print(balance_response)
     return Response({"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK)
-
 
 # @api_view(["GET"])
 # def fund_all_wallets(request):

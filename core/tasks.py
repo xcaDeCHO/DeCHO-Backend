@@ -48,7 +48,7 @@ def fund_wallet(wallet_address):
 
 
 def opt_in_to_choice(address):
-    logger.info(f"Opting into $CHOICE ASA for {address}...")
+    print(f"Opting into $CHOICE ASA for {address}...")
 
     wallet = Wallet.objects.get(address=address)
 

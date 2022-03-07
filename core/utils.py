@@ -1,5 +1,6 @@
 import requests
 import secrets
+from algosdk.error import IndexerHTTPError
 
 from django.conf import settings
 
@@ -22,8 +23,12 @@ def contains_choice_coin(address: str) -> bool:
 
 def check_choice_balance(address: str):
     """Checks if the address is opt into Choice Coin."""
-    account = indexer_client.account_info(address)
+    # try:
+    #     account = indexer_client.account_info(address)
+    # except IndexerHTTPError:
+    #     return 0
     # if contains_choice_coin(address):address
+    account = indexer_client.account_info(address)
     choice_balance = 0
     if account.get("account").get("assets"):
         for asset in account["account"]["assets"]:
