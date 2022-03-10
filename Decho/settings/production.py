@@ -3,7 +3,7 @@ import django_heroku
 
 # for digital ocean setup
 
-DEBUG = True
+DEBUG = False
 
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey implementation to use.
