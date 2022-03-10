@@ -140,7 +140,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "authentication.User"
 
-CHOICE_ID = 71501663
+CHOICE_ID = 297995609
 
 ALGOD_ADDRESS = "https://node.algoexplorerapi.io"
 INDEXER_ADDRESS = "https://algoindexer.algoexplorerapi.io"
