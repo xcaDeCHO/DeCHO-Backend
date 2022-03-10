@@ -1,3 +1,4 @@
+from turtle import Turtle
 from django.db import models
 
 from .utils import gen_random_photo_url
@@ -16,6 +17,7 @@ class Cause(models.Model):
     title = models.CharField(max_length=255)
     long_description = models.CharField(max_length=3000)
     short_description = models.CharField(max_length=255)
+    website_uri = models.URLField(max_length=2048, blank=True, null=True)
     status = models.CharField(max_length=12, choices=STATUS, default="pending")
     wallet_address = models.CharField(max_length=60)
     photo_url = models.URLField(default=gen_random_photo_url)
