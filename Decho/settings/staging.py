@@ -1,8 +1,8 @@
+from .common import *
 import django_heroku
 
-from .common import *
+# for digital ocean setup
 
-# for heroku set up
 
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey implementation to use.
