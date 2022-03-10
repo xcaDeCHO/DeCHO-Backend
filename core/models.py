@@ -1,4 +1,3 @@
-from turtle import Turtle
 from django.db import models
 
 from .utils import gen_random_photo_url
