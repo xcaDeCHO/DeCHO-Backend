@@ -16,13 +16,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@json-rpc-tools/utils@1.7.6/dist/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/algosdk@1.14.0/dist/browser/algosdk.min.js"></script>
     <script>
-        console.log(window)
         const WalletConnect = window.WalletConnect.default
         const QRCodeModal = window.WalletConnectQRCodeModal.default
         const algosdk = window.algosdk
+        const formatJsonRpcRequest = window.JsonRpcUtils.formatJsonRpcRequest
 
+        let myAddress;
         const recipientAddress = "{{ address }}"
         const amountToSend = "{{ amount }}"
+        const requestType = "{{ type }}"
 
         const btn = document.getElementById("btn")
 
@@ -56,6 +58,7 @@
 
                 // Get updated accounts
                 const { accounts } = payload.params[0];
+                myAddress = accounts[0]
             });
 
             connector.on("disconnect", (error, payload) => {
@@ -63,37 +66,39 @@
                     throw error;
                 }
             });
-            const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-                from: "ALICEU3WMO5XYJVSODKJSYLFILIXXBEXHKIVSMX7GMGXJAYGFCJKVSQTUE",
-                to: "HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA",
-                amount: 100000,
-                suggestedParams,
-            });
 
-            // Sign transaction
-            // txns is an array of algosdk.Transaction like below
-            // i.e txns = [txn, ...someotherTxns], but we've only built one transaction in our case
-            const txns = [txn]
-            const txnsToSign = txns.map(txn => {
-                const encodedTxn = Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString("base64");
-
-                return {
-                    txn: encodedTxn,
-                    message: 'Description of transaction being signed',
-                    // Note: if the transaction does not need to be signed (because it's part of an atomic group
-                    // that will be signed by another party), specify an empty singers array like so:
-                    // signers: [],
-                };
-            });
-
-            const requestParams = [txnsToSign];
-
-            const request = formatJsonRpcRequest("algo_signTxn", requestParams);
-            connector.sendCustomRequest(request).then((result) => {
-                result.map(element => {
-                    return element ? new Uint8Array(Buffer.from(element, "base64")) : null;
+            if (requestType === "makeTxn") {
+                // Get suggestedParams by going setting up an algodClient and making an api request
+                const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+                    from: myAddress,
+                    to: recipientAddress,
+                    amount: parseInt(amountToSend),
+                    suggestedParams,
                 });
-            }).catch((error) => console.log('Error!'))
+
+                // Sign transaction
+                const txns = [txn]
+                const txnsToSign = txns.map(txn => {
+                    const encodedTxn = Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString("base64");
+
+                    return {
+                        txn: encodedTxn,
+                        message: 'Description of transaction being signed',
+                        // Note: if the transaction does not need to be signed (because it's part of an atomic group
+                        // that will be signed by another party), specify an empty singers array like so:
+                        // signers: [],
+                    };
+                });
+
+                const requestParams = [txnsToSign];
+
+                const request = formatJsonRpcRequest("algo_signTxn", requestParams);
+                connector.sendCustomRequest(request).then((result) => {
+                    result.map(element => {
+                        return element ? new Uint8Array(Buffer.from(element, "base64")) : null;
+                    });
+                }).catch((error) => console.log('Error!'))
+            }
         }
 
 
