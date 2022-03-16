@@ -17,6 +17,7 @@ from .signals import generate_wallet_for_cause
 
 @api_view(["POST"])
 @transaction.atomic
+@throttle_classes([UserRateThrottle])
 def create_cause(request):
     serializer = CauseSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -30,7 +31,6 @@ def create_cause(request):
 
 
 @api_view(["GET"])
-@throttle_classes([UserRateThrottle])
 def list_causes(request):
     statuses = ['pending', 'Approved']
     causes = Cause.objects.filter(status__in=statuses)
