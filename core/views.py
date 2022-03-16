@@ -1,8 +1,9 @@
 from django.db import transaction
 
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from .models import Cause, Wallet
 from .serializers import CauseSerializer
@@ -15,6 +16,7 @@ from .signals import generate_wallet_for_cause
 
 
 @api_view(["POST"])
+@throttle_classes([UserRateThrottle])
 def create_cause(request):
 
     serializer = CauseSerializer(data=request.data)
