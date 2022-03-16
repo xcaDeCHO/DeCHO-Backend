@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeCHO - Wallet Connect</title>
+</head>
+
+<body>
+    <h1>Connect Wallet</h1>
+    <button id="btn">Connect wallet</button>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/client@1.7.1/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/algorand-walletconnect-qrcode-modal@1.6.1/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@json-rpc-tools/utils@1.7.6/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/algosdk@1.14.0/dist/browser/algosdk.min.js"></script>
+    <script>
+        console.log(window)
+        const WalletConnect = window.WalletConnect.default
+        const QRCodeModal = window.WalletConnectQRCodeModal.default
+        const algosdk = window.algosdk
+
+        const recipientAddress = "{{ address }}"
+        const amountToSend = "{{ amount }}"
+
+        const btn = document.getElementById("btn")
+
+        btn.onclick = () => {
+            const connector = new WalletConnect({
+                bridge: "https://bridge.walletconnect.org",
+                qrcodeModal: QRCodeModal,
+            })
+
+            // Check if connection is already established
+            if (!connector.connected) {
+                // create new session
+                connector.createSession();
+            }
+
+            // Subscribe to connection events
+            connector.on("connect", (error, payload) => {
+                if (error) {
+                    throw error;
+                }
+
+                // Get provided accounts
+                const { accounts } = payload.params[0];
+            });
+
+
+            connector.on("session_update", (error, payload) => {
+                if (error) {
+                    throw error;
+                }
+
+                // Get updated accounts
+                const { accounts } = payload.params[0];
+            });
+
+            connector.on("disconnect", (error, payload) => {
+                if (error) {
+                    throw error;
+                }
+            });
+            const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+                from: "ALICEU3WMO5XYJVSODKJSYLFILIXXBEXHKIVSMX7GMGXJAYGFCJKVSQTUE",
+                to: "HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA",
+                amount: 100000,
+                suggestedParams,
+            });
+
+            // Sign transaction
+            // txns is an array of algosdk.Transaction like below
+            // i.e txns = [txn, ...someotherTxns], but we've only built one transaction in our case
+            const txns = [txn]
+            const txnsToSign = txns.map(txn => {
+                const encodedTxn = Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString("base64");
+
+                return {
+                    txn: encodedTxn,
+                    message: 'Description of transaction being signed',
+                    // Note: if the transaction does not need to be signed (because it's part of an atomic group
+                    // that will be signed by another party), specify an empty singers array like so:
+                    // signers: [],
+                };
+            });
+
+            const requestParams = [txnsToSign];
+
+            const request = formatJsonRpcRequest("algo_signTxn", requestParams);
+            connector.sendCustomRequest(request).then((result) => {
+                result.map(element => {
+                    return element ? new Uint8Array(Buffer.from(element, "base64")) : null;
+                });
+            }).catch((error) => console.log('Error!'))
+        }
+
+
+    </script>
+</body>
+
+</html>

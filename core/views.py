@@ -1,15 +1,14 @@
 from django.db import transaction
-
+from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import Cause, Wallet
+from .models import Cause
 from .serializers import CauseSerializer
+from .signals import generate_wallet_for_cause
 from .tasks import fund_wallet
 from .utils import check_choice_balance
-from .signals import generate_wallet_for_cause
-
 
 # Create your views here.
 
@@ -30,7 +29,7 @@ def create_cause(request):
 
 @api_view(["GET"])
 def list_causes(request):
-    statuses = ['pending', 'Approved']
+    statuses = ["pending", "Approved"]
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
@@ -40,7 +39,7 @@ def list_causes(request):
 
 @api_view(["GET"])
 def null_causes(request):
-    statuses = ['done', 'canceled']
+    statuses = ["done", "canceled"]
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
@@ -50,9 +49,10 @@ def null_causes(request):
 
 # TODO: Write view for canceled causes
 
+
 @api_view(["GET"])
 def approved_causes(request):
-    causes = Cause.objects.filter(status='Approved')
+    causes = Cause.objects.filter(status="Approved")
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
         {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
@@ -63,7 +63,10 @@ def approved_causes(request):
 def check_balances(request, address):
     balance_response = check_choice_balance(address)
     print(balance_response)
-    return Response({"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK)
+    return Response(
+        {"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK
+    )
+
 
 # @api_view(["GET"])
 # def fund_all_wallets(request):
@@ -73,3 +76,11 @@ def check_balances(request, address):
 #     return Response(
 #         {"status": status.HTTP_200_OK, "data": "Transactions queued"}, status=status.HTTP_200_OK
 #     )
+
+
+# TODO: testing and making template finer
+def wallet_connect(request):
+    address = request.GET.get("recipientAddress")
+    amount = request.GET.get("amountToSend")
+
+    return render(request, "wallet_connect.html", {"address": address, "amount": amount})
