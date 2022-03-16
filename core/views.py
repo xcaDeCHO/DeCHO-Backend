@@ -16,8 +16,8 @@ from .signals import generate_wallet_for_cause
 
 
 @api_view(["POST"])
-@transaction.atomic
 @throttle_classes([UserRateThrottle])
+@transaction.atomic
 def create_cause(request):
     serializer = CauseSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
