@@ -15,17 +15,24 @@ from .signals import generate_wallet_for_cause
 
 
 @api_view(["POST"])
-@transaction.atomic
 def create_cause(request):
+
     serializer = CauseSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    cause = serializer.save()
-    wallet = generate_wallet_for_cause(cause)
-    fund_wallet(wallet.address)
-    return Response(
-        {"status": status.HTTP_201_CREATED, "data": serializer.data},
-        status=status.HTTP_201_CREATED,
-    )
+    try:
+        with transaction.atomic():
+            cause = serializer.save()
+            wallet = generate_wallet_for_cause(cause)
+            fund_wallet(wallet.address)
+        return Response(
+            {"status": status.HTTP_201_CREATED, "data": serializer.data},
+            status=status.HTTP_201_CREATED,
+        )
+    except:
+        return Response(
+            {"status": status.HTTP_424_FAILED_DEPENDENCY, "data": "Cause creation failed. Please try again"},
+            status=status.HTTP_424_FAILED_DEPENDENCY,
+        )
 
 
 @api_view(["GET"])

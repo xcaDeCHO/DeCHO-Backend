@@ -33,7 +33,7 @@ def check_choice_balance(address: str):
     if account.get("account").get("assets"):
         for asset in account["account"]["assets"]:
             if asset["asset-id"] == settings.CHOICE_ID:
-                choice_balance = asset["amount"]
+                choice_balance = int(asset["amount"])/100
                 break
 
     return choice_balance
