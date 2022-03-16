@@ -1,8 +1,9 @@
 from django.db import transaction
 
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from .models import Cause, Wallet
 from .serializers import CauseSerializer
@@ -29,6 +30,7 @@ def create_cause(request):
 
 
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 def list_causes(request):
     statuses = ['pending', 'Approved']
     causes = Cause.objects.filter(status__in=statuses)
