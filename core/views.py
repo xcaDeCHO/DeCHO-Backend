@@ -82,5 +82,14 @@ def check_balances(request, address):
 def wallet_connect(request):
     address = request.GET.get("recipientAddress")
     amount = request.GET.get("amountToSend")
+    request_type = request.GET.get("type")
 
-    return render(request, "wallet_connect.html", {"address": address, "amount": amount})
+    return render(
+        request,
+        "wallet_connect.html",
+        {
+            "address": address,
+            "amount": amount,
+            "type": request_type,
+        },
+    )
