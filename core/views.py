@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
-from .models import Cause, Wallet
+from .models import Cause, Wallet, Giveaway
 from .serializers import CauseSerializer
 from .tasks import fund_wallet
 from .utils import check_choice_balance
@@ -66,6 +66,29 @@ def check_balances(request, address):
     balance_response = check_choice_balance(address)
     print(balance_response)
     return Response({"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def giveaway(request, **kwargs):
+    address_param = kwargs.get("address")
+    if Giveaway.objects.filter(address=address_param):
+        return Response(
+            {
+                "status": status.HTTP_409_CONFLICT,
+                "data": "This address have already been recorded"
+            },
+            status=status.HTTP_409_CONFLICT
+        )
+    giveaway = Giveaway(address=address_param)
+    giveaway.save()
+    return Response(
+        {
+            "status": status.HTTP_200_OK,
+            "data": "Submission Successfully Recorded"
+        },
+        status=status.HTTP_200_OK
+    )
+
 
 # @api_view(["GET"])
 # def fund_all_wallets(request):
