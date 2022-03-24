@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
 from .models import Cause, Wallet, Giveaway
-from .serializers import CauseSerializer
+from .serializers import CauseSerializer, GiveawaySerializer
 from .tasks import fund_wallet
 from .utils import check_choice_balance
 from .signals import generate_wallet_for_cause
@@ -89,6 +89,14 @@ def giveaway(request, **kwargs):
         status=status.HTTP_200_OK
     )
 
+@api_view(["GET"])
+def results(request, **kwargs):
+    addresses = Giveaway.objects.all()
+    serializer = GiveawaySerializer(instance=addresses, many=True)
+    return Response({
+        "status": status.HTTP_200_OK,
+        "data":serializer.data
+    }, status=status.HTTP_200_OK)
 
 # @api_view(["GET"])
 # def fund_all_wallets(request):
