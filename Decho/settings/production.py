@@ -3,7 +3,9 @@ import django_heroku
 
 # for digital ocean setup
 
-DEBUG = True
+DEBUG = False
+
+ALLOWED_HOSTS = ["decho-mainnet.herokuapp.com", "app.decho.finance"]
 
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey implementation to use.

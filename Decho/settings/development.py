@@ -1,5 +1,5 @@
 from .common import *
-
+ALLOWED_HOSTS = ["*"]
 # Default Huey Config
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey implementation to use.
