@@ -2,6 +2,7 @@ from django.db import models
 
 from .utils import gen_random_photo_url
 
+
 # Create your models here.
 
 
@@ -38,8 +39,9 @@ class Approval(models.Model):
     expiry_date = models.DateTimeField()
     goal = models.IntegerField()
 
+
 class Giveaway(models.Model):
     address = models.CharField(max_length=100, unique=True)
-    
+
     def __str__(self):
         return self.address

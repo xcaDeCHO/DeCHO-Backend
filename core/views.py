@@ -68,19 +68,20 @@ def check_balances(request, address):
     return Response({"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def giveaway(request, **kwargs):
-    address_param = kwargs.get("address")
-    if Giveaway.objects.filter(address=address_param):
+    serializer = GiveawaySerializer(data=request.data)
+    try:
+        serializer.is_valid()
+        serializer.save()
+    except AssertionError:
         return Response(
-            {
-                "status": status.HTTP_409_CONFLICT,
-                "data": "This address have already been recorded"
-            },
-            status=status.HTTP_409_CONFLICT
-        )
-    giveaway = Giveaway(address=address_param)
-    giveaway.save()
+                {
+                    "status": status.HTTP_409_CONFLICT,
+                    "data": "This address has already been recorded"
+                },
+                status=status.HTTP_409_CONFLICT
+            )
     return Response(
         {
             "status": status.HTTP_200_OK,
@@ -89,13 +90,14 @@ def giveaway(request, **kwargs):
         status=status.HTTP_200_OK
     )
 
+
 @api_view(["GET"])
 def results(request, **kwargs):
     addresses = Giveaway.objects.all()
     serializer = GiveawaySerializer(instance=addresses, many=True)
     return Response({
         "status": status.HTTP_200_OK,
-        "data":serializer.data
+        "data": serializer.data
     }, status=status.HTTP_200_OK)
 
 # @api_view(["GET"])

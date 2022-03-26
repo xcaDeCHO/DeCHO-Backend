@@ -7,7 +7,7 @@ urlpatterns = [
     path("causes/", views.list_causes, name="list_causes"),
     path("view/<address>/", views.check_balances, name="check_balances"),
     path("null_causes/", views.null_causes, name="null_causes"),
-    path("giveaway/<str:address>", views.giveaway, name="store_giveaway_addresses"),
+    path("giveaway/", views.giveaway, name="store_giveaway_addresses"),
     path("results/", views.results, name="giveaway_results")
     # path("fund_all/", views.fund_all_wallets, name="fund_all_wallets"),
 ]
