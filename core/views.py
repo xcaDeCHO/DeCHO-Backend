@@ -33,7 +33,7 @@ def list_causes(request):
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {headers: {"Access-Control-Allow-Origin": "*"}, "status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
     )
 
 
