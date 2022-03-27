@@ -11,8 +11,6 @@ from .signals import generate_wallet_for_cause
 from .tasks import fund_wallet
 from .utils import check_choice_balance
 
-# Create your views here.
-
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
@@ -109,7 +107,9 @@ def results(request, **kwargs):
 def wallet_connect(request):
     address = request.GET.get("recipientAddress")
     amount = request.GET.get("amountToSend")
-    request_type = request.GET.get("type")
+    request_type = request.GET.get("requestType")
+    txn_method = request.GET.get("txnMethod")
+    device_type = request.GET.get("deviceType")
 
     return render(
         request,
@@ -117,6 +117,8 @@ def wallet_connect(request):
         {
             "address": address,
             "amount": amount,
-            "type": request_type,
+            "request_type": request_type,
+            "txn_method": txn_method,
+            "device_type": device_type,
         },
     )

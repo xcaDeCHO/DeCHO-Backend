@@ -5,49 +5,160 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"
+        integrity="sha512-wnea99uKIC3TJF7v4eKk4Y+lMz2Mklv18+r4na2Gn1abDRPPOeef95xTzdwGD9e6zXJBteMIhZ1+68QC5byJZw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>DeCHO - Wallet Connect</title>
+    <style>
+        body {
+            background-color: #282828;
+            font-family: 'Montserrat', sans-serif !important;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Connect Wallet</h1>
-    <button id="btn">Connect wallet</button>
+    <h1 class="text-center font-extrabold tracking-widest text-5xl mt-4 text-gray-300">DeCHO</h1>
+    <div id="content" class="flex mt-80 justify-center place-items-center flex-col">
+        <button
+            class="font-bold tracking-widest text-gray-300 uppercase border-2 my-3 rounded px-8 py-3 hover:text-gray-800 hover:bg-gray-100"
+            id="btn">Connect wallet</button>
+
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/client@1.7.1/dist/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/algorand-walletconnect-qrcode-modal@1.6.1/dist/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@json-rpc-tools/utils@1.7.6/dist/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/algosdk@1.14.0/dist/browser/algosdk.min.js"></script>
+    <script src="https://bundle.run/buffer@6.0.3"></script>
     <script>
-        const WalletConnect = window.WalletConnect.default
-        const QRCodeModal = window.WalletConnectQRCodeModal.default
         const algosdk = window.algosdk
         const formatJsonRpcRequest = window.JsonRpcUtils.formatJsonRpcRequest
+        const WalletConnect = window.WalletConnect.default
+        const QRCodeModal = window.WalletConnectQRCodeModal.default
+        const Buffer = window.buffer.Buffer
 
-        let myAddress;
         const recipientAddress = "{{ address }}"
         const amountToSend = "{{ amount }}"
-        const requestType = "{{ type }}"
+        const requestType = "{{ request_type }}"
+        const txnMethod = "{{ txn_method }}"
+        const deviceType = "{{ device_type }}"
+        let myAddress = window.localStorage.getItem('myAddress')
 
-        const btn = document.getElementById("btn")
 
-        btn.onclick = () => {
-            const connector = new WalletConnect({
-                bridge: "https://bridge.walletconnect.org",
-                qrcodeModal: QRCodeModal,
-            })
+        const connectWalletBtn = document.getElementById("btn")
+        const contentDiv = document.getElementById("content")
 
-            // Check if connection is already established
-            if (!connector.connected) {
-                // create new session
+        const algodClient = new algosdk.Algodv2("", "https://node.algoexplorerapi.io", "")
+        const connector = new WalletConnect({
+            bridge: "https://bridge.walletconnect.org",
+            qrcodeModal: QRCodeModal,
+        })
+
+
+        const addDisconnectButton = (address, contentDiv, connectWalletBtn) => {
+            if (address) {
+                connectWalletBtn.textContent = "SIGN TRANSACTION"
+
+                contentDiv.insertAdjacentHTML("beforeend",
+                    `<button id="disconnectBtn" class="block font-bold tracking-widest text-gray-300 uppercase border-2 rounded px-16 py-3 hover:text-gray-800 hover:bg-gray-100"id="btn">
+                    disconnect
+                </button>`)
+            }
+        }
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id == 'disconnectBtn') {
+                connector.killSession()
+                window.localStorage.removeItem('myAddress')
+                window.location.reload()
+            }
+        })
+
+
+        const makeTransaction = (myAddress, amountToSend, recipientAddress, connector) => {
+            let txn;
+
+            algodClient.getTransactionParams().do().then((suggestedParams) => {
+                if (txnMethod === "asa") {
+                    txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+                        from: myAddress,
+                        to: recipientAddress,
+                        amount: parseInt(amountToSend) * 100,
+                        assetIndex: 297995609,
+                        suggestedParams,
+                    });
+                } else if (txnMethod === "algo") {
+                    txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+                        from: myAddress,
+                        to: recipientAddress,
+                        amount: parseInt(amountToSend) * 1000000,
+                        suggestedParams,
+                    });
+                }
+
+
+                // Sign transaction
+                const txns = [txn]
+                const txnsToSign = txns.map(txn => {
+                    const encodedTxn = Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString("base64");
+                    return {
+                        txn: encodedTxn,
+                        message: 'DeCHO',
+                    };
+                });
+
+                const requestParams = [txnsToSign];
+                const request = formatJsonRpcRequest("algo_signTxn", requestParams);
+
+                if (deviceType === "android") {
+                    window.open('algorand://', '_blank')
+                } else if (deviceType === "ios") {
+                    window.open('algorand-wc://', '_blank')
+                } else {
+                    console.warn("This only works for mobile devices!")
+                }
+
+                connector.sendCustomRequest(request).then((result) => {
+                    const decodedR = result.map(element => {
+                        return element ? new Uint8Array(Buffer.from(element, "base64")) : null;
+                    });
+
+                    // Do something if successful
+                    algodClient.sendRawTransaction(decodedR).do().then((result) => {
+                        console.log(result)
+                    }).catch((error) => { console.log(error) })
+
+                }).catch((error) => console.log(error))
+            }).catch((error) => console.log(error))
+        }
+
+        addDisconnectButton(myAddress, contentDiv, connectWalletBtn)
+
+        connectWalletBtn.onclick = () => {
+            if (!connector.connected && !myAddress) {
+                console.log('Creating new connection...')
                 connector.createSession();
+            } else {
+                console.log('Already connected...')
+                if (requestType === "makeTxn") {
+                    makeTransaction(myAddress, amountToSend, recipientAddress, connector)
+                }
             }
 
-            // Subscribe to connection events
             connector.on("connect", (error, payload) => {
                 if (error) {
                     throw error;
                 }
 
-                // Get provided accounts
                 const { accounts } = payload.params[0];
+                myAddress = accounts[0]
+
+                window.localStorage.setItem('myAddress', myAddress)
+                window.location.reload()
             });
 
 
@@ -55,53 +166,19 @@
                 if (error) {
                     throw error;
                 }
+                console.log(payload)
 
-                // Get updated accounts
                 const { accounts } = payload.params[0];
-                myAddress = accounts[0]
             });
 
             connector.on("disconnect", (error, payload) => {
                 if (error) {
                     throw error;
                 }
+
+                console.log('Disconnected...')
             });
-
-            if (requestType === "makeTxn") {
-                // Get suggestedParams by going setting up an algodClient and making an api request
-                const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-                    from: myAddress,
-                    to: recipientAddress,
-                    amount: parseInt(amountToSend),
-                    suggestedParams,
-                });
-
-                // Sign transaction
-                const txns = [txn]
-                const txnsToSign = txns.map(txn => {
-                    const encodedTxn = Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString("base64");
-
-                    return {
-                        txn: encodedTxn,
-                        message: 'Description of transaction being signed',
-                        // Note: if the transaction does not need to be signed (because it's part of an atomic group
-                        // that will be signed by another party), specify an empty singers array like so:
-                        // signers: [],
-                    };
-                });
-
-                const requestParams = [txnsToSign];
-
-                const request = formatJsonRpcRequest("algo_signTxn", requestParams);
-                connector.sendCustomRequest(request).then((result) => {
-                    result.map(element => {
-                        return element ? new Uint8Array(Buffer.from(element, "base64")) : null;
-                    });
-                }).catch((error) => console.log('Error!'))
-            }
         }
-
-
     </script>
 </body>
 
