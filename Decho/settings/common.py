@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure-$#y8(-&orpq=wzxa5in+xu@=(1h373coy-b&3#t)xv3gn7ft!@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+
 
 # Application definition
 
@@ -63,11 +63,14 @@ ROOT_URLCONF = "Decho.urls"
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    }
 }
 
 TEMPLATES = [
@@ -143,10 +146,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "authentication.User"
 
-CHOICE_ID = 71501663
+CHOICE_ID = 297995609
 
-ALGOD_ADDRESS = "https://node.testnet.algoexplorerapi.io"
-INDEXER_ADDRESS = "https://algoindexer.testnet.algoexplorerapi.io"
+ALGOD_ADDRESS = "https://node.algoexplorerapi.io"
+INDEXER_ADDRESS = "https://algoindexer.algoexplorerapi.io"
 ALGOD_TOKEN = ""
 ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS, {"X-API-Key": ""})
 INDEXER_CLIENT = indexer.IndexerClient(ALGOD_TOKEN, INDEXER_ADDRESS, {"X-API-Key": ""})
+

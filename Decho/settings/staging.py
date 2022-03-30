@@ -1,9 +1,9 @@
+from .common import *
 import django_heroku
 
-from .common import *
+# for digital ocean setup
 
-# for heroku set up
-
+ALLOWED_HOSTS = ["decho-staging.herokuapp.com"]
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey implementation to use.
     "name": "Decho",  # Use db name for huey.
