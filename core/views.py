@@ -54,7 +54,6 @@ def null_causes(request):
     )
 
 
-# TODO: Write view for canceled causes
 
 
 @api_view(["GET"])
