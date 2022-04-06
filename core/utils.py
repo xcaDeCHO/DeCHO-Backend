@@ -36,12 +36,14 @@ def check_choice_balance(address: str):
         print(err)
         return 0
 
-    # return 'Error not opted in for Choice'
-
 
 def check_algo_balance(address: str) -> int:
-    account = indexer_client.account_info(address)
-    return account["account"]["amount"] / 1000000
+    try:
+        account = indexer_client.account_info(address)
+        return account["account"]["amount"] / 1000000
+    except IndexerHTTPError as err:
+        print(err)
+        return 0
 
 
 def get_transactions(address: str, asa_id: int):
