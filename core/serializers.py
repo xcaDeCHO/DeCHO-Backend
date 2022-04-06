@@ -1,17 +1,17 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from .models import Approval, Cause, Donation, Wallet, Giveaway
-from .utils import check_algo_balance, check_choice_balance
+from .models import Approval, Cause, Donation, Giveaway, Wallet
 from .tasks import opt_in_to_choice
+from .utils import check_algo_balance, check_choice_balance
 
 algod_client = settings.ALGOD_CLIENT
 
 
 class GiveawaySerializer(serializers.ModelSerializer):
-     class Meta:
-         model = Giveaway
-         fields = ["address"]
+    class Meta:
+        model = Giveaway
+        fields = ["address"]
 
 
 class WalletSerializer(serializers.ModelSerializer):

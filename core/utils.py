@@ -1,7 +1,7 @@
-import requests
 import secrets
-from algosdk.error import IndexerHTTPError
 
+import requests
+from algosdk.error import IndexerHTTPError
 from django.conf import settings
 
 algod_client = settings.ALGOD_CLIENT
@@ -22,21 +22,19 @@ def contains_choice_coin(address: str) -> bool:
 
 
 def check_choice_balance(address: str):
-    """Checks if the address is opt into Choice Coin."""
-    # try:
-    #     account = indexer_client.account_info(address)
-    # except IndexerHTTPError:
-    #     return 0
-    # if contains_choice_coin(address):address
-    account = indexer_client.account_info(address)
-    choice_balance = 0
-    if account.get("account").get("assets"):
-        for asset in account["account"]["assets"]:
-            if asset["asset-id"] == settings.CHOICE_ID:
-                choice_balance = int(asset["amount"])/100
-                break
+    try:
+        account = indexer_client.account_info(address)
+        choice_balance = 0
+        if account.get("account").get("assets"):
+            for asset in account["account"]["assets"]:
+                if asset["asset-id"] == settings.CHOICE_ID:
+                    choice_balance = int(asset["amount"]) / 100
+                    break
 
-    return choice_balance
+        return choice_balance
+    except IndexerHTTPError as err:
+        print(err)
+        return 0
 
     # return 'Error not opted in for Choice'
 
