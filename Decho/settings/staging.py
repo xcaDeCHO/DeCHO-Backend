@@ -29,4 +29,6 @@ HUEY = {
 CHOICE_ID = 297995609
 ALGOD_ADDRESS = "https://node.testnet.algoexplorerapi.io"
 INDEXER_ADDRESS = "https://algoindexer.testnet.algoexplorerapi.io"
+ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS, {"X-API-Key": ""})
+INDEXER_CLIENT = indexer.IndexerClient(ALGOD_TOKEN, INDEXER_ADDRESS, {"X-API-Key": ""})
 django_heroku.settings(locals())
