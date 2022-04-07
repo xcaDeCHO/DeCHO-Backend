@@ -26,5 +26,7 @@ HUEY = {
     },
 }
 
-
+CHOICE_ID = 297995609
+ALGOD_ADDRESS = "https://node.testnet.algoexplorerapi.io"
+INDEXER_ADDRESS = "https://algoindexer.testnet.algoexplorerapi.io"
 django_heroku.settings(locals())

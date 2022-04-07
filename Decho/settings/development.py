@@ -31,4 +31,3 @@ HUEY = {
         "health_check_interval": 1,  # Check worker health every second.
     },
 }
-CHOICE_ID = 297995609

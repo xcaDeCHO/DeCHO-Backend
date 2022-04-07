@@ -29,5 +29,6 @@ HUEY = {
     },
 }
 
-
+ALGOD_ADDRESS = "https://node.algoexplorerapi.io"
+INDEXER_ADDRESS = "https://algoindexer.algoexplorerapi.io"
 django_heroku.settings(locals())
