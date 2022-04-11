@@ -48,15 +48,44 @@ def check_algo_balance(address: str) -> int:
 
 def get_transactions(address: str, asa_id: int):
     """Gets all transactions for a particular ASA on an address"""
+    # This function was written to be used for Cause approval addresses
+    try:
+        txns = indexer_client.search_asset_transactions(
+            asset_id=asa_id,
+            txn_type="axfer",
+            address=address,
+            address_role="receiver",
+        )
+        return txns["transactions"]
 
-    txns = indexer_client.search_asset_transactions(
-        asset_id=asa_id,
-        txn_type="axfer",
-        address=address,
-        address_role="receiver",
-    )
-    return txns["transactions"]
+    except IndexerHTTPError:
+        return []
 
+
+def get_algo_sent(address: str):
+    """Getting the algo transactions sent by an address """
+    transactions = indexer_client.search_transactions(address=address, address_role="sender", txn_type="pay")
+    return transactions.get("transactions")
 
 def gen_random_photo_url():
     return f"https://avatars.dicebear.com/api/bottts/{secrets.token_hex(10)}.png"
+
+
+def filter_transactions(from_address: str, to_address, asa_id: int=None):
+    if asa_id:
+        transactions = get_transactions(address=to_address, asa_id=asa_id)
+        required_transactions = []
+        for transaction in transactions:
+            if transaction.get("sender") == from_address:
+                required_transactions.append(transaction)
+    else:
+        transactions = get_algo_sent(from_address)
+        required_transactions = []
+        for transaction in transactions:
+            if transaction.get("payment-transaction").get("reciever") == to_address:
+                required_transactions.append(transaction)
+
+    return required_transactions
+
+
+

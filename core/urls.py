@@ -8,6 +8,7 @@ urlpatterns = [
     path("view/<address>/", views.check_balances, name="check_balances"),
     path("null_causes/", views.null_causes, name="null_causes"),
     path("giveaway/", views.giveaway, name="store_giveaway_addresses"),
-    path("results/", views.results, name="giveaway_results")
+    path("results/", views.results, name="giveaway_results"),
+    path("transactions/<int:cause_id>/<address>/", views.get_user_donations_to_cause, name="get+user_donations_cause")
     # path("fund_all/", views.fund_all_wallets, name="fund_all_wallets"),
 ]

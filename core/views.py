@@ -1,21 +1,21 @@
 from django.db import transaction
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
-from .models import Cause, Giveaway
+from .models import Cause, Giveaway, Wallet
 from .serializers import CauseSerializer, GiveawaySerializer
 from .signals import generate_wallet_for_cause
 from .tasks import fund_wallet
-from .utils import check_choice_balance
+from .utils import check_choice_balance, filter_transactions
 
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 def create_cause(request):
-
     serializer = CauseSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
@@ -129,3 +129,20 @@ def wallet_connect(request):
             "device_type": device_type,
         },
     )
+
+
+@api_view(['GET'])
+def get_user_donations_to_cause(cause_id: int, address: str):
+    try:
+        wallet = Wallet.objects.get(cause_id=cause_id)
+    except Wallet.DoesNotExist:
+        return Response({"status": status.HTTP_404_NOT_FOUND, "message": "Cause wallet does not exist"},
+                        status=status.HTTP_404_NOT_FOUND)
+    approval_transactions = filter_transactions(from_address=address, to_address=wallet.address,
+                                                asa_id=settings.CHOICE_ID)
+    donation_transactions = filter_transactions(from_address=address, to_address=wallet.address)
+    return Response({"status": status.HTTP_200_OK,
+                     "message": {"approval_transactions": approval_transactions,
+                                 "donation_transactions": donation_transactions}
+                     },
+                    status=status.HTTP_200_OK)

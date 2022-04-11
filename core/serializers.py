@@ -59,3 +59,4 @@ class CauseSerializer(serializers.ModelSerializer):
             balance = check_algo_balance(instance.decho_wallet.address)
 
         return balance
+
