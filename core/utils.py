@@ -71,7 +71,7 @@ def gen_random_photo_url():
     return f"https://avatars.dicebear.com/api/bottts/{secrets.token_hex(10)}.png"
 
 
-def filter_transactions(from_address: str, to_address, asa_id: int=None):
+def filter_transactions(from_address: str, to_address, asa_id: int = None):
     if asa_id:
         transactions = get_transactions(address=to_address, asa_id=asa_id)
         required_transactions = []
@@ -82,7 +82,7 @@ def filter_transactions(from_address: str, to_address, asa_id: int=None):
         transactions = get_algo_sent(from_address)
         required_transactions = []
         for transaction in transactions:
-            if transaction.get("payment-transaction").get("reciever") == to_address:
+            if transaction.get("payment-transaction").get("receiver") == to_address:
                 required_transactions.append(transaction)
 
     return required_transactions
