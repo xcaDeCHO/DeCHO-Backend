@@ -132,7 +132,7 @@ def wallet_connect(request):
 
 
 @api_view(['GET'])
-def get_user_donations_to_cause(cause_id: int, address: str):
+def get_user_donations_to_cause(request, cause_id: int, address: str):
     try:
         wallet = Wallet.objects.get(cause_id=cause_id)
     except Wallet.DoesNotExist:
