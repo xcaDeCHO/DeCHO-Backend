@@ -1,5 +1,7 @@
 from django.db import transaction
 from django.shortcuts import render
+
+from rest_framework import generics
 from rest_framework import status
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
@@ -10,6 +12,7 @@ from .serializers import CauseSerializer, GiveawaySerializer
 from .signals import generate_wallet_for_cause
 from .tasks import fund_wallet
 from .utils import check_choice_balance
+from core import serializers
 
 
 @api_view(["POST"])
@@ -29,7 +32,10 @@ def create_cause(request):
         )
     except:
         return Response(
-            {"status": status.HTTP_424_FAILED_DEPENDENCY, "data": "Cause creation failed. Please try again"},
+            {
+                "status": status.HTTP_424_FAILED_DEPENDENCY,
+                "data": "Cause creation failed. Please try again",
+            },
             status=status.HTTP_424_FAILED_DEPENDENCY,
         )
 
@@ -40,20 +46,41 @@ def list_causes(request):
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
     )
 
 
 @api_view(["GET"])
-def null_causes(request):
+def detail_cause(request, id):
+    cause = Cause.objects.filter(id=id)
+    if not cause.exists():
+        return Response(
+            {"status": status.HTTP_404_NOT_FOUND, "detail": "Cause not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    serializer = CauseSerializer(instance=cause, many=True)
+    return Response(
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
+    )
+
+
+class CauseDetailView(generics.RetrieveAPIView):
+    queryset = Cause.objects.all()
+    serializer_class = CauseSerializer
+    lookup_field = "id"
+
+
+@api_view(["GET"])
+def null_causes(request, pk):
     statuses = ["done", "canceled"]
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
     )
-
-
 
 
 @api_view(["GET"])
@@ -61,7 +88,8 @@ def approved_causes(request):
     causes = Cause.objects.filter(status="Approved")
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
     )
 
 
@@ -70,7 +98,8 @@ def check_balances(request, address):
     balance_response = check_choice_balance(address)
     print(balance_response)
     return Response(
-        {"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": balance_response},
+        status=status.HTTP_200_OK,
     )
 
 
@@ -82,7 +111,10 @@ def giveaway(request, **kwargs):
         serializer.save()
     except AssertionError:
         return Response(
-            {"status": status.HTTP_409_CONFLICT, "data": "This address has already been recorded"},
+            {
+                "status": status.HTTP_409_CONFLICT,
+                "data": "This address has already been recorded",
+            },
             status=status.HTTP_409_CONFLICT,
         )
     return Response(
@@ -96,7 +128,8 @@ def results(request, **kwargs):
     addresses = Giveaway.objects.all()
     serializer = GiveawaySerializer(instance=addresses, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
     )
 
 
