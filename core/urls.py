@@ -1,13 +1,11 @@
 from django.urls import path
 
 from . import views
-from .views import CauseDetailView
 
 urlpatterns = [
     path("create/", views.create_cause, name="create_cause"),
     path("causes/", views.list_causes, name="list_causes"),
-    path("cause/<int:id>", views.detail_cause, name="detail_cause"),
-    path('cause/detail/<int:id>', CauseDetailView.as_view(), name="detail_cause_view"),
+    path("causes/<int:id>", views.detail_cause, name="detail_cause"),
     path("view/<address>/", views.check_balances, name="check_balances"),
     path("null_causes/", views.null_causes, name="null_causes"),
     path("giveaway/", views.giveaway, name="store_giveaway_addresses"),

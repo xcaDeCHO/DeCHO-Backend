@@ -66,12 +66,6 @@ def detail_cause(request, id):
     )
 
 
-class CauseDetailView(generics.RetrieveAPIView):
-    queryset = Cause.objects.all()
-    serializer_class = CauseSerializer
-    lookup_field = "id"
-
-
 @api_view(["GET"])
 def null_causes(request, pk):
     statuses = ["done", "canceled"]
