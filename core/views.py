@@ -1,3 +1,4 @@
+from logging import raiseExceptions
 from django.db import transaction
 from django.shortcuts import render
 
@@ -101,18 +102,22 @@ def check_balances(request, address):
 def giveaway(request, **kwargs):
     serializer = GiveawaySerializer(data=request.data)
     try:
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         serializer.save()
-    except AssertionError:
+    except:
         return Response(
             {
-                "status": status.HTTP_409_CONFLICT,
-                "data": "This address has already been recorded",
+                "status": status.HTTP_424_FAILED_DEPENDENCY,
+                "data": "Address could not be recorded, please confirm it's valid and try again",
             },
-            status=status.HTTP_409_CONFLICT,
+            status=status.HTTP_424_FAILED_DEPENDENCY,
         )
     return Response(
-        {"status": status.HTTP_200_OK, "data": "Submission Successfully Recorded"},
+        {
+            "status": status.HTTP_200_OK,
+            "message": "Submission successfully recorded",
+            "data": serializer.data,
+        },
         status=status.HTTP_200_OK,
     )
 

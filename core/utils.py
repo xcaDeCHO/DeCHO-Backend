@@ -1,6 +1,7 @@
 import requests
 import secrets
 from algosdk.error import IndexerHTTPError
+from algosdk.encoding import is_valid_address
 
 from django.conf import settings
 
