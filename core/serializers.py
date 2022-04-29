@@ -38,6 +38,7 @@ class CauseSerializer(serializers.ModelSerializer):
     decho_wallet = WalletSerializer(read_only=True)
     wallet_address = serializers.CharField(write_only=True, max_length=58, min_length=58)
     balance = serializers.SerializerMethodField()
+    verified = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Cause
