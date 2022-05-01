@@ -132,7 +132,7 @@ def update_cause_from_approved():
             print(f"2nd {type(cause.donations.expiry_date)}")
         elif utc.localize(datetime.datetime.now()) > cause.donations.expiry_date:
             cause.status = "canceled"
-            transactions = get_transactions(indexer_client, cause.decho_wallet.address)
+            transactions = get_transactions(cause.decho_wallet.address, settings.CHOICE_ID)
             for _transaction in transactions:
                 if _transaction.get("sender") == cause.decho_wallet.address:
                     pass
