@@ -34,7 +34,7 @@ def check_choice_balance(address: str):
     if account.get("account").get("assets"):
         for asset in account["account"]["assets"]:
             if asset["asset-id"] == settings.CHOICE_ID:
-                choice_balance = int(asset["amount"])/100
+                choice_balance = int(asset["amount"]) / 100
                 break
 
     return choice_balance
@@ -61,3 +61,10 @@ def get_transactions(address: str, asa_id: int):
 
 def gen_random_photo_url():
     return f"https://avatars.dicebear.com/api/bottts/{secrets.token_hex(10)}.png"
+
+
+def get_algo_transactions(address: str):
+    txns = indexer_client.search_transactions(address=address,
+                                              address_role="receiver",
+                                              txn_type="pay")
+    return txns["transactions"]
