@@ -171,10 +171,10 @@ def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int
     )
 
 
-@db_task()
-def donation_goal_reached_transfer(cause: Cause):
-    receiver = cause.wallet_address
-    sender = cause.decho_wallet
+# @db_task()
+# def donation_goal_reached_transfer(cause: Cause):
+#     receiver = cause.wallet_address
+#     sender = cause.decho_wallet
 
 
 # @db_task()
@@ -189,7 +189,10 @@ def transfer_algo(receiver, sender, amount):
         sender=sender.address, sp=params, receiver=receiver, amt=amount
     )
     signed_txn = unsigned_txn.sign(mnemonic.to_private_key(sender.mnemonic))
-    txn_id = algod_client.send_transaction(signed_txn)
+    try:
+        txn_id = algod_client.send_transaction(signed_txn)
+    except:
+        logger.info('Error sending algo')
 
     time.sleep(4)
     # transaction.wait_for_confirmation(algod_client, txn_id)
