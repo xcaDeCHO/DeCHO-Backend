@@ -88,4 +88,8 @@ def filter_transactions(from_address: str, to_address, asa_id: int = None):
     return required_transactions
 
 
-
+def get_algo_transactions(address: str):
+    txns = indexer_client.search_transactions(address=address,
+                                              address_role="receiver",
+                                              txn_type="pay")
+    return txns["transactions"]

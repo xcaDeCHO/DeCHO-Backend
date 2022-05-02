@@ -11,7 +11,7 @@ from huey import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, task
 
 from .models import Cause, Wallet
-from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions
+from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, get_algo_transactions
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
@@ -132,7 +132,7 @@ def update_cause_from_approved():
             print(f"2nd {type(cause.donations.expiry_date)}")
         elif utc.localize(datetime.datetime.now()) > cause.donations.expiry_date:
             cause.status = "canceled"
-            transactions = get_transactions(cause.decho_wallet.address, settings.CHOICE_ID)
+            transactions = get_algo_transactions(cause.decho_wallet.address)
             for _transaction in transactions:
                 if _transaction.get("sender") == cause.decho_wallet.address:
                     pass
