@@ -67,7 +67,7 @@ def detail_cause(request, id):
 
 
 @api_view(["GET"])
-def null_causes(request, pk):
+def null_causes(request):
     statuses = ["done", "canceled"]
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
