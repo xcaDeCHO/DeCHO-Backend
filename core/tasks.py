@@ -132,7 +132,8 @@ def update_cause_from_approved():
             print(f"2nd {type(cause.donations.expiry_date)}")
         elif utc.localize(datetime.datetime.now()) > cause.donations.expiry_date:
             cause.status = "canceled"
-            transactions = get_algo_transactions(cause.decho_wallet.address)
+            transactions = get_algo_transactions(address=cause.decho_wallet.address)
+            print("expired")
             for _transaction in transactions:
                 if _transaction.get("sender") == cause.decho_wallet.address:
                     pass
@@ -140,7 +141,7 @@ def update_cause_from_approved():
                     transfer_algo(
                         receiver=_transaction.get("sender"),
                         sender=cause.decho_wallet,
-                        amount=int(_transaction.get("asset-transfer-transaction").get("amount")),
+                        amount=int(_transaction.get("payment-transaction").get("amount")),
                     )
             cause.save()
             return

@@ -1,5 +1,7 @@
 from django.test import TestCase
 from molotov import scenario
+
+
 # Create your tests here.
 
 @scenario(weight=100)

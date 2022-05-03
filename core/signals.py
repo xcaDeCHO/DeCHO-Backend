@@ -12,4 +12,3 @@ def generate_wallet_for_cause(instance: Cause):
     wallet = Wallet.objects.create(address=address, mnemonic=wallet_mnemonic, cause=instance)
     return wallet
 
-# TODO: Set up central wallet to transfer funds for opting in to choice

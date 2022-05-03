@@ -1,6 +1,6 @@
 import secrets
-
-import requests
+from algosdk.error import IndexerHTTPError
+from algosdk.encoding import is_valid_address
 from algosdk.error import IndexerHTTPError
 from django.conf import settings
 
@@ -22,6 +22,7 @@ def contains_choice_coin(address: str) -> bool:
 
 
 def check_choice_balance(address: str):
+    """Checks if the address is opt into Choice Coin."""
     try:
         account = indexer_client.account_info(address)
         choice_balance = 0
@@ -30,7 +31,6 @@ def check_choice_balance(address: str):
                 if asset["asset-id"] == settings.CHOICE_ID:
                     choice_balance = int(asset["amount"]) / 100
                     break
-
         return choice_balance
     except IndexerHTTPError as err:
         print(err)
@@ -66,6 +66,7 @@ def get_algo_sent(address: str):
     """Getting the algo transactions sent by an address """
     transactions = indexer_client.search_transactions(address=address, address_role="sender", txn_type="pay")
     return transactions.get("transactions")
+
 
 def gen_random_photo_url():
     return f"https://avatars.dicebear.com/api/bottts/{secrets.token_hex(10)}.png"

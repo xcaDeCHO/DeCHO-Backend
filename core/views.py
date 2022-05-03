@@ -1,7 +1,10 @@
+import json
+from logging import raiseExceptions
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
-from rest_framework import status
+
+from rest_framework import status, serializers
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
@@ -29,7 +32,10 @@ def create_cause(request):
         )
     except:
         return Response(
-            {"status": status.HTTP_424_FAILED_DEPENDENCY, "data": "Cause creation failed. Please try again"},
+            {
+                "status": status.HTTP_424_FAILED_DEPENDENCY,
+                "data": "Cause creation failed. Please try again",
+            },
             status=status.HTTP_424_FAILED_DEPENDENCY,
         )
 
@@ -40,21 +46,35 @@ def list_causes(request):
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
     )
 
 
 @api_view(["GET"])
-def null_causes(request):
+def detail_cause(request, id):
+    cause = Cause.objects.filter(id=id)
+    if not cause.exists():
+        return Response(
+            {"status": status.HTTP_404_NOT_FOUND, "detail": "Cause not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    serializer = CauseSerializer(instance=cause, many=True)
+    return Response(
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+def null_causes(request, pk):
     statuses = ["done", "canceled"]
     causes = Cause.objects.filter(status__in=statuses)
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
     )
-
-
-# TODO: Write view for canceled causes
 
 
 @api_view(["GET"])
@@ -62,7 +82,8 @@ def approved_causes(request):
     causes = Cause.objects.filter(status="Approved")
     serializer = CauseSerializer(instance=causes, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK,
     )
 
 
@@ -71,7 +92,8 @@ def check_balances(request, address):
     balance_response = check_choice_balance(address)
     print(balance_response)
     return Response(
-        {"status": status.HTTP_200_OK, "data": balance_response}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": balance_response},
+        status=status.HTTP_200_OK,
     )
 
 
@@ -79,15 +101,24 @@ def check_balances(request, address):
 def giveaway(request, **kwargs):
     serializer = GiveawaySerializer(data=request.data)
     try:
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         serializer.save()
-    except AssertionError:
+    except serializers.ValidationError as err:
         return Response(
-            {"status": status.HTTP_409_CONFLICT, "data": "This address has already been recorded"},
-            status=status.HTTP_409_CONFLICT,
+            {
+                "status": status.HTTP_400_BAD_REQUEST,
+                "data": "Address could not be recorded, please confirm it's valid and try again",
+                "message": err.detail
+            },
+            status=status.HTTP_400_BAD_REQUEST,
         )
+
     return Response(
-        {"status": status.HTTP_200_OK, "data": "Submission Successfully Recorded"},
+        {
+            "status": status.HTTP_200_OK,
+            "message": "Submission successfully recorded",
+            "data": serializer.data,
+        },
         status=status.HTTP_200_OK,
     )
 
@@ -97,7 +128,8 @@ def results(request, **kwargs):
     addresses = Giveaway.objects.all()
     serializer = GiveawaySerializer(instance=addresses, many=True)
     return Response(
-        {"status": status.HTTP_200_OK, "data": serializer.data}, status=status.HTTP_200_OK
+        {"status": status.HTTP_200_OK, "data": serializer.data},
+        status=status.HTTP_200_OK
     )
 
 

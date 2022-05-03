@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from .models import Approval, Cause, Donation, Giveaway, Wallet
 from .tasks import opt_in_to_choice
-from .utils import check_algo_balance, check_choice_balance
+from .utils import check_algo_balance, check_choice_balance, is_valid_address
 
 algod_client = settings.ALGOD_CLIENT
 
@@ -12,6 +12,11 @@ class GiveawaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Giveaway
         fields = ["address"]
+
+    def validate(self, data):
+        if not is_valid_address(data['address']):
+            raise serializers.ValidationError("Address submitted must be a valid algorand wallet address")
+        return data
 
 
 class WalletSerializer(serializers.ModelSerializer):

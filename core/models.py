@@ -42,7 +42,7 @@ class Approval(models.Model):
 
 
 class Giveaway(models.Model):
-    address = models.CharField(max_length=100, unique=True)
+    address = models.CharField(max_length=100, unique=True, blank=False, null=False)
 
     def __str__(self):
         return self.address
