@@ -20,6 +20,7 @@ class Cause(models.Model):
     status = models.CharField(max_length=12, choices=STATUS, default="pending")
     wallet_address = models.CharField(max_length=60)
     photo_url = models.URLField(default=gen_random_photo_url)
+    verified = models.BooleanField(default=False)
 
 
 class Wallet(models.Model):
@@ -45,3 +46,4 @@ class Giveaway(models.Model):
 
     def __str__(self):
         return self.address
+

@@ -68,9 +68,9 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     # 'DEFAULT_THROTTLE_RATES': {
-    #     'anon': '100/day',
-    #     'user': '1000/day'
-    # }
+    #     'anon': '1000000/day',
+    #     'user': '1000000/day'
+
 }
 
 TEMPLATES = [
@@ -146,11 +146,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "authentication.User"
 
-CHOICE_ID = 297995609
 
-ALGOD_ADDRESS = "https://node.algoexplorerapi.io"
-INDEXER_ADDRESS = "https://algoindexer.algoexplorerapi.io"
+
 ALGOD_TOKEN = ""
-ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS, {"X-API-Key": ""})
-INDEXER_CLIENT = indexer.IndexerClient(ALGOD_TOKEN, INDEXER_ADDRESS, {"X-API-Key": ""})
+
 

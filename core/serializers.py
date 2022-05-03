@@ -1,21 +1,21 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from .models import Approval, Cause, Donation, Wallet, Giveaway
-from .utils import check_algo_balance, check_choice_balance, is_valid_address
+from .models import Approval, Cause, Donation, Giveaway, Wallet
 from .tasks import opt_in_to_choice
+from .utils import check_algo_balance, check_choice_balance, is_valid_address
 
 algod_client = settings.ALGOD_CLIENT
 
 
 class GiveawaySerializer(serializers.ModelSerializer):
     class Meta:
-         model = Giveaway
-         fields = ["address"]
+        model = Giveaway
+        fields = ["address"]
 
     def validate(self, data):
         if not is_valid_address(data['address']):
-            return serializers.ValidationError("Address submitted must be a valid algorand wallet address")
+            raise serializers.ValidationError("Address submitted must be a valid algorand wallet address")
         return data
 
 
@@ -43,6 +43,7 @@ class CauseSerializer(serializers.ModelSerializer):
     decho_wallet = WalletSerializer(read_only=True)
     wallet_address = serializers.CharField(write_only=True, max_length=58, min_length=58)
     balance = serializers.SerializerMethodField()
+    verified = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Cause
@@ -64,3 +65,4 @@ class CauseSerializer(serializers.ModelSerializer):
             balance = check_algo_balance(instance.decho_wallet.address)
 
         return balance
+
