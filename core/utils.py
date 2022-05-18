@@ -4,10 +4,10 @@ from algosdk.encoding import is_valid_address
 from algosdk.error import IndexerHTTPError
 from django.conf import settings
 
+
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
 fernet = settings.FERNET
-
 
 
 def contains_choice_coin(address: str) -> bool:
@@ -47,6 +47,7 @@ def check_algo_balance(address: str) -> int:
         print(err)
         return 0
 
+
 def get_transactions(address: str, asa_id: int):
     """Gets all transactions for a particular ASA on an address"""
     # This function was written to be used for Cause approval addresses
@@ -72,8 +73,10 @@ def get_algo_sent(address: str):
 def gen_random_photo_url():
     return f"https://avatars.dicebear.com/api/bottts/{secrets.token_hex(10)}.png"
 
-def decrypt_mnemonic(mnemonic:str)->str:
+
+def decrypt_mnemonic(mnemonic: str) -> str:
     return fernet.decrypt(mnemonic.encode()).decode()
+
 
 def filter_transactions(from_address: str, to_address, asa_id: int = None):
     if asa_id:
@@ -97,3 +100,5 @@ def get_algo_transactions(address: str):
                                               address_role="receiver",
                                               txn_type="pay")
     return txns["transactions"]
+
+

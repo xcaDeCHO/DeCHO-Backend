@@ -1,7 +1,10 @@
 from django.db import models
 
 from .utils import gen_random_photo_url
+from django.conf import settings
 
+
+fernet = settings.FERNET
 
 # Create your models here.
 
@@ -47,3 +50,10 @@ class Giveaway(models.Model):
     def __str__(self):
         return self.address
 
+
+def encrypt_all_wallets():
+    wallets = Wallet.objects.all()
+    for wallet in wallets:
+        encrypted_mnemonic = fernet.encrypt(wallet.mnemonic.encode()).decode()
+        wallet.mnemonic = encrypted_mnemonic
+        wallet.save()
