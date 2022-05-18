@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-$#y8(-&orpq=wzxa5in+xu@=(1h373coy-b&3#t)xv3gn7ft!@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+
 
 # Application definition
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # 3rd party
     "huey.contrib.djhuey",
     "rest_framework",
+    "corsheaders",
     # product_apps
     "core",
     "authentication",
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -62,12 +64,22 @@ ROOT_URLCONF = "Decho.urls"
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '1000000/day',
+    #     'user': '1000000/day'
+
 }
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR / "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -91,6 +103,8 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -133,13 +147,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "authentication.User"
 
-CHOICE_ID = 71501663
 
-ALGOD_ADDRESS = "https://node.testnet.algoexplorerapi.io"
-INDEXER_ADDRESS = "https://algoindexer.testnet.algoexplorerapi.io"
+
 ALGOD_TOKEN = ""
-ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS, {"X-API-Key": ""})
-INDEXER_CLIENT = indexer.IndexerClient(ALGOD_TOKEN, INDEXER_ADDRESS, {"X-API-Key": ""})
+
 _key = config("ENC_KEY")
 _key = _key.encode()
 FERNET = Fernet(key=_key)
+

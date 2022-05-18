@@ -1,6 +1,7 @@
 import datetime
 import logging
 import time
+import pytz
 
 from algosdk import mnemonic
 from algosdk.future import transaction
@@ -10,12 +11,14 @@ from huey import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, task
 
 from .models import Cause, Wallet
-from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, decrypt_mnemonic
+from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, get_algo_transactions,decrypt_mnemonic
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
 
 logger = logging.getLogger("huey")
+
+utc = pytz.UTC
 
 
 @task()
@@ -26,7 +29,7 @@ def test_huey():
 # Two retries might be too much
 # @task(retries=2)
 def fund_wallet(wallet_address):
-    logger.info(f"Funding wallet {wallet_address}...")
+    print(f"Funding wallet {wallet_address}...")
 
     suggested_params = algod_client.suggested_params()
     central_address = config("CENTRAL_WALLET_ADDRESS")
@@ -45,7 +48,7 @@ def fund_wallet(wallet_address):
 
 
 def opt_in_to_choice(address):
-    logger.info(f"Opting into $CHOICE ASA for {address}...")
+    print(f"Opting into $CHOICE ASA for {address}...")
 
     wallet = Wallet.objects.get(address=address)
 
@@ -71,14 +74,19 @@ def update_cause_status():
     causes = Cause.objects.filter(status="pending")
     logger.info(f"Found {causes.count()} causes pending!")
     for cause in causes:
+        logger.info(f'cause: {cause.id}')
         address = cause.decho_wallet.address
         balance = check_choice_balance(address)
         try:
             balance = int(balance)
         except:
+            logger.info("exception block")
             return
 
+        logger.info(f"choice balance {balance} and goal {cause.cause_approval.goal}")
         if balance >= cause.cause_approval.goal:
+            logger.info("compared")
+
             cause.status = "Approved"
             transactions = get_transactions(address, settings.CHOICE_ID)
             for _transaction in transactions:
@@ -90,10 +98,13 @@ def update_cause_status():
                 )
             cause.save()
             return
-        elif datetime.datetime.now().date() > cause.cause_approval.expiry_date.date():
+        elif utc.localize(datetime.datetime.now()) >= cause.cause_approval.expiry_date:
+            logger.info("date_passed")
             cause.status = "canceled"
             transactions = get_transactions(address=address, asa_id=settings.CHOICE_ID)
+            logger.info(f'the transactions:{transactions}')
             for _transaction in transactions:
+                logger.info(_transaction)
                 refund_from_approval(
                     decho_wallet_addr=cause.decho_wallet.address,
                     reciever_addr=_transaction.get("sender"),
@@ -116,16 +127,17 @@ def update_cause_from_approved():
         if algo_balance >= cause.donations.goal:
             receiver = cause.wallet_address
             sender = cause.decho_wallet
-            amount = cause.donations.goal
+            amount = int((algo_balance - 0.3) * 1000000)
+            print(f"the amount is {amount}")
             transfer_algo(receiver=receiver, sender=sender, amount=amount)
             cause.status = "done"
             cause.save()
             print(type(datetime.datetime.now().date()))
             print(f"2nd {type(cause.donations.expiry_date)}")
-        elif datetime.datetime.now().date() > cause.donations.expiry_date.date():
+        elif utc.localize(datetime.datetime.now()) > cause.donations.expiry_date:
             cause.status = "canceled"
-            cause.save()
-            transactions = get_transactions(indexer_client, cause.decho_wallet.address)
+            transactions = get_algo_transactions(address=cause.decho_wallet.address)
+            print("expired")
             for _transaction in transactions:
                 if _transaction.get("sender") == cause.decho_wallet.address:
                     pass
@@ -133,8 +145,9 @@ def update_cause_from_approved():
                     transfer_algo(
                         receiver=_transaction.get("sender"),
                         sender=cause.decho_wallet,
-                        amount=int(_transaction.get("asset-transfer-transaction").get("amount")),
+                        amount=int(_transaction.get("payment-transaction").get("amount")),
                     )
+            cause.save()
             return
 
 
@@ -163,10 +176,10 @@ def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int
     )
 
 
-@db_task()
-def donation_goal_reached_transfer(cause: Cause):
-    receiver = cause.wallet_address
-    sender = cause.decho_wallet
+# @db_task()
+# def donation_goal_reached_transfer(cause: Cause):
+#     receiver = cause.wallet_address
+#     sender = cause.decho_wallet
 
 
 # @db_task()
@@ -182,8 +195,10 @@ def transfer_algo(receiver, sender: Wallet, amount):
     )
     wallet_mnemonic = decrypt_mnemonic(sender.mnemonic)
     signed_txn = unsigned_txn.sign(mnemonic.to_private_key(wallet_mnemonic))
-    txn_id = algod_client.send_transaction(signed_txn)
-
+    try:
+        txn_id = algod_client.send_transaction(signed_txn)
+    except:
+        logger.info('Error sending algo')
     time.sleep(4)
     # transaction.wait_for_confirmation(algod_client, txn_id)
     logger.info(f"Sent algo(cause goal reached) {amount} from {sender.address} to {receiver}!")
