@@ -11,7 +11,7 @@ from huey import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, task
 
 from .models import Cause, Wallet
-from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, get_algo_transactions
+from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, get_algo_transactions,decrypt_mnemonic
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
@@ -56,11 +56,13 @@ def opt_in_to_choice(address):
     unsigned_transaction = transaction.AssetTransferTxn(
         wallet.address, suggested_params, wallet.address, 0, settings.CHOICE_ID
     )
-    signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet.mnemonic))
+    wallet_mnemonic = decrypt_mnemonic(wallet.mnemonic)
+    signed_transaction = unsigned_transaction.sign(mnemonic.to_private_key(wallet_mnemonic))
     transaction_id = algod_client.send_transaction(signed_transaction)
 
     time.sleep(5)
     # transaction.wait_for_confirmation(algod_client, transaction_id)
+
 
 # logger.info(f"Opted into $CHOICE ASA for {address} successful!")
 
@@ -80,9 +82,11 @@ def update_cause_status():
         except:
             logger.info("exception block")
             return
+
         logger.info(f"choice balance {balance} and goal {cause.cause_approval.goal}")
         if balance >= cause.cause_approval.goal:
             logger.info("compared")
+
             cause.status = "Approved"
             transactions = get_transactions(address, settings.CHOICE_ID)
             for _transaction in transactions:
@@ -161,7 +165,8 @@ def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int
         amt=amount,
         index=asset,
     )
-    signed_txn = txn.sign(mnemonic.to_private_key(wallet.mnemonic))
+    wallet_mnemonic = decrypt_mnemonic(wallet.mnemonic)
+    signed_txn = txn.sign(mnemonic.to_private_key(wallet_mnemonic))
     txn_id = algod_client.send_transaction(signed_txn)
 
     time.sleep(4)
@@ -183,17 +188,17 @@ def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int
 
 
 @db_task()
-def transfer_algo(receiver, sender, amount):
+def transfer_algo(receiver, sender: Wallet, amount):
     params = algod_client.suggested_params()
     unsigned_txn = transaction.PaymentTxn(
         sender=sender.address, sp=params, receiver=receiver, amt=amount
     )
-    signed_txn = unsigned_txn.sign(mnemonic.to_private_key(sender.mnemonic))
+    wallet_mnemonic = decrypt_mnemonic(sender.mnemonic)
+    signed_txn = unsigned_txn.sign(mnemonic.to_private_key(wallet_mnemonic))
     try:
         txn_id = algod_client.send_transaction(signed_txn)
     except:
         logger.info('Error sending algo')
-
     time.sleep(4)
     # transaction.wait_for_confirmation(algod_client, txn_id)
     logger.info(f"Sent algo(cause goal reached) {amount} from {sender.address} to {receiver}!")

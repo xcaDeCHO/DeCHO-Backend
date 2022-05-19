@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 
 from algosdk.v2client import algod, indexer
+from cryptography.fernet import Fernet
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -150,4 +151,7 @@ AUTH_USER_MODEL = "authentication.User"
 
 ALGOD_TOKEN = ""
 
+_key = config("ENC_KEY")
+_key = _key.encode()
+FERNET = Fernet(key=_key)
 
