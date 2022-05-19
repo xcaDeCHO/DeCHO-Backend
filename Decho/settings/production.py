@@ -28,7 +28,7 @@ HUEY = {
         "health_check_interval": 1,  # Check worker health every second.
     },
 }
-CHOICE_ID = 297995609
+CHOICE_ID = 722955559
 ALGOD_ADDRESS = "https://node.algoexplorerapi.io"
 INDEXER_ADDRESS = "https://algoindexer.algoexplorerapi.io"
 ALGOD_CLIENT = algod.AlgodClient(ALGOD_TOKEN, ALGOD_ADDRESS, {"X-API-Key": ""})
