@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 
 from rest_framework import status, serializers
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
@@ -14,10 +14,12 @@ from .serializers import CauseSerializer, GiveawaySerializer
 from .signals import generate_wallet_for_cause
 from .tasks import fund_wallet
 from .utils import check_choice_balance, filter_transactions
+from .permissions import OwnerPermission
 
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
+@permission_classes([OwnerPermission])
 def create_cause(request):
     serializer = CauseSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
