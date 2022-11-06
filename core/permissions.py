@@ -8,5 +8,5 @@ class OwnerPermission(BasePermission):
 
     def has_permission(self, request, view):
         user = request.META.get('OWNER_TOKEN')
-        return  user == config("OWNER")
+        return user == config("OWNER")
 

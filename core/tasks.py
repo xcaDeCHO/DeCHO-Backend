@@ -1,8 +1,10 @@
 import datetime
 import logging
+import os
 import time
 import pytz
 
+from algosdk import atomic_transaction_composer
 from algosdk import mnemonic
 from algosdk.future import transaction
 from decouple import config
@@ -11,7 +13,8 @@ from huey import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, task
 
 from .models import Cause, Wallet
-from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, get_algo_transactions,decrypt_mnemonic
+from .utils import check_algo_balance, check_choice_balance, contains_choice_coin, get_transactions, \
+    get_algo_transactions, decrypt_mnemonic
 
 algod_client = settings.ALGOD_CLIENT
 indexer_client = settings.INDEXER_CLIENT
@@ -189,16 +192,39 @@ def refund_from_approval(decho_wallet_addr: str, reciever_addr: str, amount: int
 
 @db_task()
 def transfer_algo(receiver, sender: Wallet, amount):
-    params = algod_client.suggested_params()
-    unsigned_txn = transaction.PaymentTxn(
-        sender=sender.address, sp=params, receiver=receiver, amt=amount
-    )
+    user_amount, decho_amount, community_amount = amount * 0.9, amount * 0.05, amount * 0.05
+    atomic_transaction = atomic_transaction_composer.AtomicTransactionComposer()
     wallet_mnemonic = decrypt_mnemonic(sender.mnemonic)
-    signed_txn = unsigned_txn.sign(mnemonic.to_private_key(wallet_mnemonic))
+    pk = mnemonic.to_private_key(wallet_mnemonic)
+    signer = atomic_transaction_composer.AccountTransactionSigner(private_key=pk)
+    unsigned_user_txn = generate_unsigned_algo_transaction(user_amount,
+                                                           sender_address=sender.address,
+                                                           receiver_address=receiver)
+    unsigned_decho_txn = generate_unsigned_algo_transaction(decho_amount,
+                                                            sender_address=sender.address,
+                                                            receiver_address=os.environ.get('RESERVE_WALLET'))
+    unsigned_community_txn = generate_unsigned_algo_transaction(community_amount,
+                                                                sender_address=sender.address,
+                                                                receiver_address=os.environ.get('COMMUNITY_WALLET'))
+    user_txn_with_signer = atomic_transaction_composer.TransactionWithSigner(unsigned_user_txn, signer)
+    decho_txn_with_signer = atomic_transaction_composer.TransactionWithSigner(unsigned_decho_txn, signer)
+    community_txn_with_signer = atomic_transaction_composer.TransactionWithSigner(unsigned_community_txn, signer)
     try:
-        txn_id = algod_client.send_transaction(signed_txn)
+        atomic_transaction.add_transaction(user_txn_with_signer)
+        atomic_transaction.add_transaction(decho_txn_with_signer)
+        atomic_transaction.add_transaction(community_txn_with_signer)
+        atomic_transaction.execute(algod_client, 3)
     except:
         logger.info('Error sending algo')
     time.sleep(4)
     # transaction.wait_for_confirmation(algod_client, txn_id)
     logger.info(f"Sent algo(cause goal reached) {amount} from {sender.address} to {receiver}!")
+
+
+def generate_unsigned_algo_transaction(
+        amount: int,
+        sender_address: str,
+        receiver_address: str,
+) -> transaction.PaymentTxn:
+    params = algod_client.suggested_params()
+    return transaction.PaymentTxn(sender=sender_address, sp=params, receiver=receiver_address, amt=amount)
