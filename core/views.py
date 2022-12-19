@@ -19,7 +19,7 @@ from .permissions import OwnerPermission
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
-@permission_classes([OwnerPermission])
+# @permission_classes([OwnerPermission])
 def create_cause(request):
     serializer = CauseSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
