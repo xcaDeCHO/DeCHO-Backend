@@ -3,7 +3,7 @@ import django_heroku
 
 # for digital ocean setup
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["decho-mainnet.herokuapp.com", "app.decho.finance"]
 
